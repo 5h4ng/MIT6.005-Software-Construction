@@ -65,11 +65,15 @@ List<Integer> list = new ArrayList<Integer>();
 - assignment: `list.set(2, 0)`
 - length: `list.size()`
 
-Note that ```List``` is an **interface**, a type that can not be constructed  directly with new, but that instead **specifies the operations that a List must provide**. 
+Note that ```List``` is an **interface**, a type that can not be constructed  directly with new,  but that instead **specifies the operations that a List must provide**. 
 
-```ArrayList``` is a class, a concrete type that provides implementations  of those operations.
+```ArrayList``` is a class, a concrete type that provides **implementations  of those operations**.
 
-Note also that we wrote ```List<Integer>``` instead of  ```List<int>```. Lists only know how to deal with object types, not primitive types. In Java, each of the primitive types (which are written in lowercase and often abbreviated, like `int`) has an equivalent object type (which is capitalized, and fully spelled out, like `Integer`). Java requires us to use these object type equivalents when we parameterize a type with **angle brackets <>**. But in other contexts, Java automatically converts between `int`and `Integer`, so we can write `Integer i = 5`without any type error.
+Note also that we wrote ```List<Integer>``` instead of  ```List<int>```. Lists only know how to deal with object types, not primitive types. 
+
+In Java, each of the primitive types (which are written in lowercase and often abbreviated, like `int`) has an equivalent object type (which is capitalized, and fully spelled out, like `Integer`). 
+
+Java requires us to use these object type equivalents when we parameterize a type with **angle brackets <>**. But in other contexts, Java automatically converts between `int`and `Integer`, so we can write `Integer i = 5` without any type error.
 
 ## Iterating
 
@@ -158,4 +162,11 @@ Why? Programs have to be written with two goals in mind:
 
 - Ready for change
 
-  
+
+## Take-Home Messages
+
+1. Java is a **stastically-typed** language.
+2. An `interface` defines a **contract** of behavior rather than implementation.
+3. Java Generics only work with **reference types (objects)**, not primitive types.
+4. A static method belongs to **class** instead of an instance. 
+

@@ -5,6 +5,7 @@
 - Static checking
 - Dynamic checking
   - For example, Java makes array overflow bugs impossible by catching them dynamically.
+  - But C/C++does not.
 - Immutability 
   - immutable type: e.g. String
 - Immutable references: `final`, it only makes the **reference** immutable, not necessarily the **object** that the reference points to.
@@ -16,6 +17,7 @@ If we can not prevent bugs, we can try to localize them to a small part of the p
 - Fail fast: the earlier a problem is observed (the closer to its cause), the easier it is to fix.
 - defensive programming
   - e.g. checking preconditions
+  - When the precondition is not satisfied, this code terminates the program by throwing an `IllegalArgumentException `exception. The effects of the caller’s bug are prevented from propagating.
 
 ## Assertions
 
@@ -42,8 +44,8 @@ Note that the Java `assert` statement is different from the JUnit methods `asser
 
 ## What to Assert
 
-- Method argument requirements
-- Method return value requirements
+- **Check private arguments**: Method argument requirements
+- **Self-check**: Method return value requirements
 - Covering all cases: If a conditional statement or switch does not cover all the possible cases, it is good practice to use an assertion to block the illegal cases.
 
 ## What  Not to Assert
@@ -53,6 +55,16 @@ Runtime assertions are not free.
 Never use assertions to test conditions that are external to your program, such as the existence of files, the availability of the network, or the correctness of input typed by a human user.
 
 Assertion failures indicate bugs. External failures are not bugs, and there is no change you can make to your program in advance that will prevent them from happening. External failures should be handled using **exceptions** instead.
+
+
+
+> From https://stackoverflow.com/questions/1276308/exception-vs-assertion/59546495#59546495:
+>
+> **Use assertions for internal logic** checks within your code, and normal **exceptions for error conditions outside your immediate code's control.**
+>
+> Don't forget that assertions can be turned on and off - if you care about things like argument validation, that should be explicit using exceptions. (**You could, however, choose to perform argument validation on *private* methods using assertions**, on the grounds that a violation at that point is due to an internal bug rather than an external error.)
+>
+> Alternatively it's entire reasonable (IMO) to use exceptions for everything. I personally don't use assertions much at all, but it's a matter of personal preference to some extent. (There can certainly be objective arguments for and against assertions, but it's not sufficiently clear cut to remove preference altogether.)
 
 ## Incremental Development
 

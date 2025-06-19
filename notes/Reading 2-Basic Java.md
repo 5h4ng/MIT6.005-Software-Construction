@@ -4,7 +4,7 @@
 
 ### Basics
 
-![image-20250420041053281](assets/image-20250420041053281.png)
+<img src="assets/image-20250420041053281.png" alt="image-20250420041053281" style="zoom:33%;" />
 
 Program Structure
 
@@ -111,7 +111,7 @@ The object's location is called a **reference**.
 
 - `==` compares the references;
 
-![image-20250420053727599](assets/image-20250420053727599.png)
+<img src="assets/image-20250420053727599.png" alt="image-20250420053727599" style="zoom: 33%;" />
 
 #### References
 
@@ -119,7 +119,7 @@ The object's location is called a **reference**.
 
 - using [] or .
   - Follows the reference to the object
-  - May modify the object, but never the reference
+  - **May modify the object, but never the reference**
 
 #### Static
 
@@ -164,8 +164,8 @@ public class Baby {
 
 ### Access Control
 
-- Public: others can use this
-- Private: only the class can use this
+- **Public:** others can use this
+- **Private:** only the class can use this
 - public and private applies to any field or method
 
 ```java
@@ -200,11 +200,11 @@ Why access control
   }
   ```
 
-- This lesson: class-level scope
+- This lesson: **class-level scope**
 
   ```java
   class Example {
-  	int memberVariable;
+  	int memberVariable; // class-level
   	void setVariable(int newVal) {
   		memberVariable += newVal;
   	}
@@ -212,6 +212,8 @@ Why access control
   ```
 
 ##### Only method-level 'servings' is updated
+
+This is called **shadowing**, which means local variables hide member variables. This is why we may need `this` keyword.
 
 ```java
 public class Baby {
@@ -248,7 +250,7 @@ public class Baby {
 
 - Each class belongs to a package
 - Classes in the same package serve a similar purpose 
-- Packages are juct directories
+- Packages are just directories
 - Classes in other packages need to be imported
 
 ```java
@@ -291,7 +293,7 @@ Why packages?
 ##### Special Packages
 
 - All classes "see" classes in the same package (no import needed)
-- All classes "see" claaes in `java.lang`
+- All classes "see" classes in `java.lang`
   - Example: `java.lang.String`; `java.lang.System`
 
 ### Java Interface
@@ -433,7 +435,7 @@ void doBad() throws ArrayOutOfBoundsException {
 
 ### I/O
 
-![image-20250420085627808](assets/image-20250420085627808.png)
+<img src="assets/image-20250420085627808.png" alt="image-20250420085627808" style="zoom:33%;" />
 
 ## Snapshot diagrams
 
@@ -446,3 +448,5 @@ Snapshot diagrams represent the internal state of a program at runtime - its sta
 ![image-20250420091644612](assets/image-20250420091644612.png)
 
 ![image-20250420091710517](assets/image-20250420091710517.png)
+
+Java 8 API document: https://docs.oracle.com/javase/8/docs/api/

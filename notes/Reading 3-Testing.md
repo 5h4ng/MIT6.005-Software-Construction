@@ -24,8 +24,8 @@ Why do bugs often happen at boundaries? One reason is that programmers often mak
 
 ## Blackbox and Whitebox Testing
 
-- Blackbox testing: choosing test cases only from the specification, not the implementation  of the function.
-- Whitebox testing: choosing test cases with knowledge of how the function is actually implemented.
+- **Blackbox testing**: choosing test cases only from the specification, not the implementation of the function.
+- **Whitebox testing**: choosing test cases with knowledge of how the function is actually implemented.
 
 ## Coverage
 
@@ -45,3 +45,19 @@ Unit-testing each module, in isolation as much as possible.
 - **Automated testing** means running the tests and checking their results automatically.
 - Running all your tests after every change is called **regression testing** .
 - *Test-first debugging*:  When a bug arises, immediately write a test case for it that elicits it, and immediately add it to your test suite. 
+
+## Summary
+
+In this reading, we saw these ideas:
+
+- Test-first programming. Write tests before you write code.
+- Partitioning and boundaries for choosing test cases systematically.
+- White box testing and statement coverage for filling out a test suite.
+- Unit-testing each module, in isolation as much as possible.
+- Automated regression testing to keep bugs from coming back.
+
+The topics of today’s reading connect to our three key properties of good software as follows:
+
+- **Safe from bugs.** Testing is about finding bugs in your code, and test-first programming is about finding them as early as possible, immediately after you introduced them.
+- **Easy to understand.** Testing doesn’t help with this as much as code review does.
+- **Ready for change.** Readiness for change was considered by writing tests that only depend on behavior in the spec. We also talked about automated regression testing, which helps keep bugs from coming back when changes are made to code.

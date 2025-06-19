@@ -16,7 +16,11 @@ This specification is **deterministic**: when presented with a state satisfying 
 
 ## Declarative vs. operational specs
 
-Roughly speaking, there are two kinds of specifications. *Operational* specifications give a series of steps that the method performs; pseudocode descriptions are operational. *Declarative* specifications don’t give details of intermediate steps. Instead, they just give properties of the final outcome, and how it’s related to the initial state.
+Roughly speaking, there are two kinds of specifications.
+
+*Operational* specifications give a series of steps that the method performs; pseudocode descriptions are operational. 
+
+🎉*Declarative* specifications don’t give details of intermediate steps. Instead, they just give properties of the final outcome, and how it’s related to the initial state. （**preferable**)
 
 ## Stronger vs. weaker specs
 
@@ -30,11 +34,13 @@ A specification S2 is stronger than or equal to a specification S1 if
 
 If this is the case, then an implementation that satisfies S2 can be used to satisfy S1 as well, and it’s safe to replace S1 with S2 in your program.
 
+> "Strong" means in most situations, it work better.
+
 ## Designing good specifications
 
 - The specification should be coherent: do one thing at a time
 - The results of a call should be informative
-- The specification should be strong enough 
+- The specification should be **strong** enough 
 - The specification should also be weak enough: should not guarantee anything
 - The specification should use **abstract types** where possible: Use `List` or `Set` rather than `ArrayList` or `HashSet`
 

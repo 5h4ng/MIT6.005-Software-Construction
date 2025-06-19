@@ -57,7 +57,7 @@ It should **allow multiple people to work together** :
 
 ### Copy an object graph with `git clone`
 
-![img](assets/hello-git-clone-2.png)
+<img src="assets/hello-git-clone-2.png" alt="img" style="zoom: 50%;" />
 
 ```shell
 git clone ssh://.../psets/ps0/bitdiddle.git ps0
@@ -67,11 +67,9 @@ git clone ssh://.../psets/ps0/bitdiddle.git ps0
 2. Copy the object graph from `ssh://.../psets/ps0/bitdiddle.git` into `ps0/.git`
 3. **Check out** the current version of the `master` branch
 
-![img](assets/hello-git-history-trees.png)
+<img src="assets/hello-git-history-trees.png" alt="img" style="zoom:33%;" />
 
 ### Add to the object graph with `git commit`
-
-![img](assets/hello-git-commit-0.png)
 
 ### Send & receive object graphs with `git push` & `git pull`
 
@@ -83,7 +81,7 @@ git push origin master
 2. Using `git commit`, we add new commits to the local history on the `master` branch.
 3. To send those changes back to the `origin` remote, use `git push origin master`
 
-![img](assets/hello-git-push-0.png)
+<img src="assets/hello-git-push-0.png" alt="img" style="zoom:50%;" />
 
 ### Mergeing
 
