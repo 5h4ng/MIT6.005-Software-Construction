@@ -10,10 +10,10 @@ For example, `String` is an example of an immutable type. `StringBuilder` is an 
 
 ```java
 String s = "a";
-s = s.concat("b") // s += "b"
+s = s.concat("b") // s += "b". Actually, you create a new String object.
 ```
 
-![reassigning a variable](assets/reassignment.png)
+<img src="assets/reassignment.png" alt="reassigning a variable" style="zoom: 50%;" />
 
 By contrast, `StringBuilder` objects are mutable. This class has methods that change the value of the object, rather than just returning new values:
 
@@ -22,7 +22,9 @@ StringBuilder sb = new StringBuilder("a");
 sb.append("b");
 ```
 
-![mutating an object](assets/mutation.png)
+<img src="assets/mutation.png" alt="mutating an object" style="zoom:50%;" />
+
+**There are big differences between how they behave when there are other references to the objects.**
 
 ```Java
 String t = s;
@@ -32,7 +34,7 @@ StringBuilder tb  = sb;
 tb.append("c");
 ```
 
-![different behavior of String and StringBuilder](assets/string-vs-stringbuilder.png)
+<img src="assets/string-vs-stringbuilder.png" alt="different behavior of String and StringBuilder" style="zoom:50%;" />
 
 Why do we need the mutable `StringBuilder` in programming? A common use for it is to concatenate a large number of strings together. Consider this code:
 
@@ -147,7 +149,7 @@ Now `partyDate` is just a reference to the same object as `groundhogAnswer`, not
 
 ### Solution
 
-1. Defensive Copying: `return new Date(groundhogAnswer.getTime())`
+1. **Defensive Copying**: `return new Date(groundhogAnswer.getTime())`
 
    - Wasteful if 99% of clients never modify the returned date
 
@@ -230,10 +232,16 @@ Note that the `next() `method is a **mutator** method, not only returning an ele
 - **`this`**: refers to the **instance object**
 - **private**: is used for the object's internal state and internal helper methods
 - **final** is used to indicate which of the object's internal variables can be reassigned and which cannot.
+  - For **primitive types**: A `final` variable **cannot change its value** once it is assigned.
+  - For **reference types**: A `final` variable **cannot be reassigned** to point to a different object,
+     but the **contents of the object it references can still be changed**.
+
 
 ![img](assets/iterator.png)
 
 > Iterator is an effective design pattern.
+>
+> Why iterator? The iterator concept allows a single uniform way to access different kinds of collections, so that client code is simpler and the collection implementation can change without changing the client code that iterates over it.
 
 ```java
 /**
@@ -333,6 +341,10 @@ while (iter.hasNext()) {
 }
 ```
 
+If you're **iterating over a collection**, and need to **remove elements**:
+
+> **Always use the iterator’s `remove()` method** — not the collection’s `remove()` method
+
 ## Mutation and contracts
 
 ### Mutable objects can make simple contracts very complex
@@ -373,9 +385,13 @@ Make sure you understand the difference
 - immutable object (e.g. `String`)
 - immutable reference (e.g. `final` variable)
 
+**Always use the iterator’s `remove()` method** — not the collection’s `remove()` method
+
 Snapshot diagrams can help with this understanding.
 
 - Objects are values, represented by circles in a snapshot diagram, and an immutable one has a double border indicating that it never changes its value.
 - A reference is a pointer to an object, represented by an arrow in the snapshot diagram, and an immutable reference is an arrow with a double line, indicating that the arrow can’t be moved to point to a different object.
 
 The key design principle here is **immutability**: using immutable objects and immutable references as much as possible!!!
+
+Use **defensive copying** to **protect the internal state of an object** by creating a **copy** of any mutable objects passed into or returned from a class instead of using or exposing the original reference.
