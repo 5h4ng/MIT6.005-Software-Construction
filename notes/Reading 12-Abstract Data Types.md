@@ -76,20 +76,20 @@ The **type should not mix generic and domain-specific features.** ("Separation")
 
 Critically, a good abstract data type should be **representation independent** . This means that the use of an abstract type is independent of its representation (the actual data structure or data fields used to implement it), so that changes in representation have no effect on code outside the abstract type itself.
 
-You won’t be able to change the representation of an ADT at all unless i**ts operations are fully specified with preconditions and postconditions**, so that clients know what to depend on, and you know what you can safely change.
+You won’t be able to change the representation of an ADT at all unless **its operations are fully specified with preconditions and postconditions**, so that clients know what to depend on, and you know what you can safely change.
 
-| ADT concept             | Ways to do it in Java                                        | Examples                                                     |
-| :---------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| Creator operation       | Constructor                                                  | [`ArrayList()`](https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html#ArrayList--) |
-| Static (factory) method | [`Collections.singletonList() `](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#singletonList-T-), [`Arrays.asList()`](https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html#asList-T...-) |                                                              |
-| Constant                | [`BigInteger.ZERO`](https://docs.oracle.com/javase/8/docs/api/java/math/BigInteger.html#ZERO) |                                                              |
-| Observer operation      | Instance method                                              | [`List.get()`](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#get-int-) |
-| Static method           | [`Collections.max()`](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#max-java.util.Collection-) |                                                              |
-| Producer operation      | Instance method                                              | [`String.trim()`](https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#trim--) |
-| Static method           | [`Collections.unmodifiableList()`](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#unmodifiableList-java.util.List-) |                                                              |
-| Mutator operation       | Instance method                                              | [`List.add()`](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#add-E-) |
-| Static method           | [`Collections.copy()`](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#copy-java.util.List-java.util.List-) |                                                              |
-| Representation          | `private `fields                                             |                                                              |
+| **ADT Concept**        | **Java Implementation** | **Example**                                      |
+| :--------------------- | :---------------------- | :----------------------------------------------- |
+| **Creator operation**  | Constructor             | `new ArrayList<>()`                              |
+|                        | Static (factory) method | `Collections.singletonList()`, `Arrays.asList()` |
+|                        | Constant                | `BigInteger.ZERO`                                |
+| **Observer operation** | Instance method         | `List.get()`                                     |
+|                        | Static method           | `Collections.max()`                              |
+| **Producer operation** | Instance method         | `String.trim()`                                  |
+|                        | Static method           | `Collections.unmodifiableList()`                 |
+| **Mutator operation**  | Instance method         | `List.add()`                                     |
+|                        | Static method           | `Collections.copy()`                             |
+| **Representation**     | Private fields          | `private ...`                                    |
 
 ## Summary
 
