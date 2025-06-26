@@ -7,7 +7,9 @@ import static org.junit.Assert.*;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
+import java.util.HashSet;
 
 import org.junit.Test;
 
@@ -58,5 +60,100 @@ public class ExtractTest {
      * them in a different class. If you only need them in this test class, then
      * keep them in this test class.
      */
+    private static final Instant d3 = Instant.parse("2016-02-17T12:00:00Z");
 
+    // testing strategy for getMentionedUsers:
+    // partitions:
+    // - tweet with no @
+    // - tweet with one @user (start/middle/end)
+    // - tweet with multiple @user
+    // - tweet with @ before/after username character (invalid)
+    // - tweet with @ at start/end
+    // - tweet with @user, different cases, repeated mention
+    // - tweet with @ in email
+    // - multiple tweets, overlap and distinct users
+
+    @Test
+    public void testNoMention() {
+        Tweet t = new Tweet(1, "user", "hello world", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testSingleMention() {
+        Tweet t = new Tweet(1, "user", "hi @alice", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertEquals(Collections.singleton("alice"), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testMultipleMentions() {
+        Tweet t = new Tweet(1, "user", "hi @alice and @bob!", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertEquals(new HashSet<>(Arrays.asList("alice", "bob")), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testMentionWithPunctuation() {
+        Tweet t = new Tweet(1, "user", "hello, @alice! Are you there?", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertEquals(Collections.singleton("alice"), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testMentionAtStartAndEnd() {
+        Tweet t1 = new Tweet(1, "user", "@alice how are you?", d1);
+        Tweet t2 = new Tweet(2, "user", "see you later @bob", d2);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t1, t2));
+        assertEquals(new HashSet<>(Arrays.asList("alice", "bob")), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testMentionWithFollowingUsernameChar() {
+        Tweet t = new Tweet(1, "user", "hi @alice1more", d1); // should match alice1more as one user
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertEquals(Collections.singleton("alice1more"), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testAtPrecededByUsernameChar() {
+        Tweet t = new Tweet(1, "user", "foo@bar, hi@alice, my_email@mit.edu", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testAtWithNoUsername() {
+        Tweet t = new Tweet(1, "user", "hi @ there", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testMentionCaseInsensitiveAndDuplicates() {
+        Tweet t = new Tweet(1, "user", "@Alice @ALICE @alice", d1);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t));
+        // Twitter usernames are case-insensitive, so only one "alice"
+        assertEquals(Collections.singleton("alice"), toLowerCaseSet(result));
+    }
+
+    @Test
+    public void testMultipleTweetsOverlappingUsers() {
+        Tweet t1 = new Tweet(1, "user", "hi @alice", d1);
+        Tweet t2 = new Tweet(2, "user", "hello @bob and @Alice", d2);
+        Tweet t3 = new Tweet(3, "user", "see @bob", d3);
+        Set<String> result = Extract.getMentionedUsers(Arrays.asList(t1, t2, t3));
+        assertEquals(new HashSet<>(Arrays.asList("alice", "bob")), toLowerCaseSet(result));
+    }
+
+    /** helper to lowercase all in a set, for case-insensitive checking */
+    private Set<String> toLowerCaseSet(Set<String> set) {
+        Set<String> lower = new HashSet<>();
+        for (String s : set) {
+            lower.add(s.toLowerCase());
+        }
+        return lower;
+    }
 }
+
