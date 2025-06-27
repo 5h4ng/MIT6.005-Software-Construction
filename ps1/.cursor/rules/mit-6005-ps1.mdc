@@ -1,0 +1,68 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# MIT 6.005 Problem Set 1: Tweet Tweet - Project Guide
+
+## Project Overview
+This is MIT 6.005 Software Construction Problem Set 1, focused on building a toolbox for analyzing tweets using test-first programming methodology.
+
+## Project Structure
+- **Source Code**: [src/twitter/](mdc:src/twitter) - Main implementation directory
+- **Tests**: [test/twitter/](mdc:test/twitter) - JUnit test classes
+- **Libraries**: [lib/javax.json-1.0.jar](mdc:lib/javax.json-1.0.jar) - JSON processing library
+
+## Key Implementation Classes (TO IMPLEMENT)
+- **[Extract.java](mdc:src/twitter/Extract.java)** - Extract data from tweets (getTimespan, getMentionedUsers)
+- **[Filter.java](mdc:src/twitter/Filter.java)** - Filter tweet lists (writtenBy, inTimespan, containing)  
+- **[SocialNetwork.java](mdc:src/twitter/SocialNetwork.java)** - Infer social networks (guessFollowsGraph, influencers)
+
+## Test Classes (TO IMPLEMENT)
+- **[ExtractTest.java](mdc:test/twitter/ExtractTest.java)** - Tests for Extract methods
+- **[FilterTest.java](mdc:test/twitter/FilterTest.java)** - Tests for Filter methods
+- **[SocialNetworkTest.java](mdc:test/twitter/SocialNetworkTest.java)** - Tests for SocialNetwork methods
+
+## Core Classes (DO NOT MODIFY)
+- **[Tweet.java](mdc:src/twitter/Tweet.java)** - Tweet data structure
+- **[Timespan.java](mdc:src/twitter/Timespan.java)** - Time interval representation
+- **[TweetReader.java](mdc:src/twitter/TweetReader.java)** - Tweet parsing utilities
+
+## Utility Classes
+- **[Main.java](mdc:src/twitter/Main.java)** - Demo/testing runner (free to modify)
+
+## Test-First Programming Workflow
+1. **Study specification** carefully for each method
+2. **Write JUnit tests** using input/output space partitioning
+3. **Implement method** according to spec
+4. **Revise and improve** until all tests pass
+
+## Testing Requirements
+- **Partitioning Strategy**: Document how you partitioned input/output space in test class comments
+- **Small, Focused Tests**: Create artificial tweets, not large Twitter datasets
+- **Bug Detection**: Tests should catch common implementation errors
+- **Legal Clients**: Tests must respect specifications, not implementation details
+- **One Test Per Method**: Each test case in separate JUnit method
+
+## Important Specifications Concepts
+- **Preconditions**: Behavior undefined when violated - don't test invalid inputs
+- **Postconditions**: Must implement and test specified behaviors (including exceptions)
+- **Underdetermined Specs**: Implementation has freedom within allowed range
+
+## Key Constraints
+- **No Class Name Changes**: Keep Extract, Filter, SocialNetwork, ExtractTest, FilterTest, SocialNetworkTest
+- **No Method Signature Changes**: Keep provided public method signatures
+- **No Spec Violations**: Tests must respect provided specifications
+- **Package Structure**: Keep classes in `twitter` package
+
+## Implementation Hints
+- **Time Handling**: Use `java.time.Instant` for tweet timestamps
+- **Case Sensitivity**: Consider uppercase/lowercase handling per spec requirements
+- **Social Network**: Start with basic @-mention following inference, then enhance
+
+## Testing Strategy Notes
+- Focus on **boundary conditions** and **edge cases**
+- Test **empty inputs**, **single items**, **multiple items**
+- Consider **case variations**, **special characters**, **time boundaries**
+- Verify **ordering requirements** where specified
+- Test **duplicate handling** and **invalid data** scenarios
