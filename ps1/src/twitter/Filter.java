@@ -3,6 +3,8 @@
  */
 package twitter;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +29,13 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> writtenBy(List<Tweet> tweets, String username) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<Tweet>();
+        for (Tweet tweet : tweets) {
+            if (tweet.getAuthor().equalsIgnoreCase(username)) {
+                result.add(tweet);
+            }
+        }
+        return result;
     }
 
     /**
@@ -41,7 +49,16 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> inTimespan(List<Tweet> tweets, Timespan timespan) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet tweet : tweets) {
+            Instant start = timespan.getStart();
+            Instant end = timespan.getEnd();
+            Instant tweetTime = tweet.getTimestamp();
+            if (start.isBefore(tweetTime) && end.isAfter(tweetTime)) {
+                result.add(tweet);
+            }
+        }
+        return result;
     }
 
     /**
@@ -60,7 +77,16 @@ public class Filter {
      *         same order as in the input list.
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet tweet : tweets) {
+            for (String word : words) {
+                if (tweet.getText().toLowerCase().contains(word.toLowerCase())) {
+                    result.add(tweet);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
 }

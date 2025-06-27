@@ -56,7 +56,7 @@ public class Extract {
      */
     public static Set<String> getMentionedUsers(List<Tweet> tweets) {
         Set<String> mentionedUsers = new HashSet<>();
-        Pattern mentionedUserPattern = Pattern.compile("(?<![A-Za-z0-9_])@([A-Za-z0-9_]+)");
+        Pattern mentionedUserPattern = Pattern.compile("(?<![A-Za-z0-9_-])@([A-Za-z0-9_-]+)");
         for (Tweet tweet : tweets) {
             String text = tweet.getText();
             Matcher mentionedUser = mentionedUserPattern.matcher(text);
