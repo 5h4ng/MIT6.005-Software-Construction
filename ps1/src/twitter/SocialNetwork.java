@@ -3,9 +3,7 @@
  */
 package twitter;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * SocialNetwork provides methods that operate on a social network.
@@ -41,7 +39,19 @@ public class SocialNetwork {
      *         either authors or @-mentions in the list of tweets.
      */
     public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        for (Tweet tweet : tweets) {
+            String lowerCaseAuthor = tweet.getAuthor().toLowerCase();
+            Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet));
+            Set<String> lowerCaseMentions = new HashSet<>();
+            for (String mentionedUser : mentionedUsers) {
+                lowerCaseMentions.add(mentionedUser.toLowerCase());
+            }
+            lowerCaseMentions.remove(lowerCaseAuthor);
+            followsGraph.putIfAbsent(lowerCaseAuthor, new HashSet<>());
+            followsGraph.get(lowerCaseAuthor).addAll(lowerCaseMentions);
+        }
+        return followsGraph;
     }
 
     /**
@@ -54,7 +64,27 @@ public class SocialNetwork {
      *         descending order of follower count.
      */
     public static List<String> influencers(Map<String, Set<String>> followsGraph) {
-        throw new RuntimeException("not implemented");
+        Map<String, Integer> followerCount = new HashMap<>();
+        Set<String> UserNames = new HashSet<>(followsGraph.keySet());
+        for (Set<String> followers : followsGraph.values()) {
+            UserNames.addAll(followers);
+        }
+        for (String userName : UserNames) {
+            followerCount.put(userName, 0);
+        }
+        for (Set<String> followees : followsGraph.values()) {
+            for (String followee : followees) {
+                followerCount.put(followee, followerCount.get(followee) + 1);
+            }
+        }
+        List<String> result = new ArrayList<>(UserNames);
+        result.sort((u1, u2) -> {
+            int cmp = Integer.compare(followerCount.get(u2), followerCount.get(u1));
+            if (cmp != 0) return cmp;
+            return u1.compareTo(u2);
+        });
+
+        return result;
     }
 
 }
