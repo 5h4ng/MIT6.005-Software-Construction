@@ -25,3 +25,61 @@ A third way we can talk about the equality between abstract values is in terms o
 - … and so on
 
 In terms of abstract data types, “observation” means calling operations on the objects. So two objects are equal if and only if they cannot be distinguished by calling any operations of the abstract data type.
+
+## == vs. equals()
+
+Like many languages, Java has two different operations for testing equality, with different semantics.
+
+- The `== `operator compares **references**. More precisely, it tests *referential* equality. Two references are == if they point to the same storage in memory. In terms of the snapshot diagrams we’ve been drawing, two references are `== `if their arrows point to the same object bubble.
+- The `equals() `operation compares **object contents** – in other words, *object* equality, in the sense that we’ve been talking about in this reading. The equals operation has to be defined appropriately for every abstract data type.
+
+For comparison, here are the equality operators in several languages:
+
+|             | *referential equality * | *object equality * |
+| ----------- | ----------------------- | ------------------ |
+| Java        | `==`                    | `equals()`         |
+| Objective C | `==`                    | `isEqual:`         |
+| C#          | `==`                    | `Equals()`         |
+| Python      | `is`                    | `==`               |
+| Javascript  | `==`                    | n/a                |
+
+## Equality of Immutable Types
+
+The `equals() `method is defined by `Object `, and its default implementation looks like this:
+
+```java
+public class Object {
+    
+    public boolean equals(Object that) {
+        return this == that;
+    }
+}
+```
+
+In other words, the default meaning of `equals() `is the same as referential equality. For immutable data types, this is almost always wrong. So you have to **override** the `equals() `method, replacing it with your own implementation.
+
+Here’s our first try for `Duration `:
+
+```java
+public class Duration {
+    private final int mins;
+    private final int secs;
+    // rep invariant:
+    //    mins >= 0, secs >= 0
+    // abstraction function:
+    //    represents a span of time of mins minutes and secs seconds
+
+    /** Make a duration lasting for m minutes and s seconds. */
+    public Duration(int m, int s) {
+        mins = m; secs = s;
+    }
+    /** @return length of this duration in seconds */
+    public long getLength() {
+        return mins*60 + secs;
+    }
+    // Problematic definition of equals()
+    public boolean equals(Duration that) {
+        return this.getLength() == that.getLength();        
+    }
+}
+```
