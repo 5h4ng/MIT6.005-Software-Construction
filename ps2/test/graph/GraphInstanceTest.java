@@ -42,12 +42,10 @@ public abstract class GraphInstanceTest {
     
     @Test
     public void testInitialVerticesEmpty() {
-        // TODO you may use, change, or remove this test
         assertEquals("expected new graph to have no vertices",
                 Collections.emptySet(), emptyInstance().vertices());
     }
-    
-    // TODO other tests for instance methods of Graph
+
     @Test
     public void testAddVertex() {
         Graph<String> g =  emptyInstance();
@@ -69,6 +67,14 @@ public abstract class GraphInstanceTest {
         // update edge weight
         assertEquals(5, g.set("a", "b", 10));
         assertEquals(Integer.valueOf(10), g.targets("a").get("b"));
+        // add new edge with 0 weight
+        assertEquals(0, g.set("a", "c", 0));
+        assertTrue(g.vertices().contains("a"));
+        assertTrue(g.vertices().contains("b"));
+        assertFalse(g.vertices().contains("c"));
+        assertEquals(0, g.set("d", "e", 0));
+        assertFalse(g.vertices().contains("d"));
+        assertFalse(g.vertices().contains("e"));
         // remove edge
         assertEquals(10, g.set("a", "b", 0));
         assertFalse(g.targets("a").containsKey("b"));
