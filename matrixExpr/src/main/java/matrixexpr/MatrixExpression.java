@@ -32,8 +32,9 @@ public interface MatrixExpression {
      * @throws IllegalArgumentException if the two expressions are not compatible for multiplication
      */
     static MatrixExpression times(MatrixExpression m1, MatrixExpression m2) {
-        // TODO: Check the instance type!!!
-        return new Product(m1, m2);
+        if (m1.isIdentity()) return m2;
+        else if (m2.isIdentity()) return m1;
+        else return new Product(m1, m2);
     }
 
     /**
@@ -52,4 +53,6 @@ public interface MatrixExpression {
     static MatrixExpression make(double[][] array) {
         return new Matrix(array);
     }
+
+    static final MatrixExpression I = new Identity();
 }
