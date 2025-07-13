@@ -24,7 +24,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
      * Provide a ConcreteVerticesGraph for tests in GraphInstanceTest.
      */
     @Override public Graph<String> emptyInstance() {
-        return new ConcreteVerticesGraph();
+        return new ConcreteVerticesGraph<>();
     }
     
     /*
@@ -36,20 +36,20 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // tests for ConcreteVerticesGraph.toString()
     @Test
     public void testToStringEmptyGraph() {
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = new ConcreteVerticesGraph<>();
         assertEquals("", graph.toString());
     }
 
     @Test
     public void testToStringSingleVertexNoEdge() {
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = new ConcreteVerticesGraph<>();
         graph.add("A");
         assertEquals("", graph.toString()); // 没有边，不输出
     }
 
     @Test
     public void testToStringSingleEdge() {
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = new ConcreteVerticesGraph<>();
         graph.set("A", "B", 5);
         String expected = "(A) --[5]--> (B)\n";
         assertEquals(expected, graph.toString());
@@ -57,7 +57,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testToStringMultipleEdges() {
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = new ConcreteVerticesGraph<>();
         graph.set("A", "B", 5);
         graph.set("A", "C", 7);
         String result = graph.toString();
@@ -67,7 +67,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testToStringMultipleVerticesAndEdges() {
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = new ConcreteVerticesGraph<>();
         graph.set("A", "B", 5);
         graph.set("A", "C", 7);
         graph.set("B", "C", 2);
@@ -91,13 +91,13 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testConstructorAndGetLabel() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         assertEquals("A", v.getLabel());
     }
 
     @Test
     public void testSetEdgeAddNewEdge() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         int prev = v.setEdge("B", 5);
         assertEquals(0, prev);
         assertEquals(5, (int) v.getEdges().get("B"));
@@ -105,7 +105,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testSetEdgeUpdateEdge() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         v.setEdge("B", 5);
         int prev = v.setEdge("B", 7);
         assertEquals(5, prev);
@@ -114,7 +114,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testSetEdgeRemoveEdge() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         v.setEdge("B", 5);
         int prev = v.setEdge("B", 0);
         assertEquals(5, prev);
@@ -123,14 +123,14 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testSetEdgeRemoveNonexistentEdge() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         int prev = v.setEdge("B", 0);
         assertEquals(0, prev);
     }
 
     @Test
     public void testGetTargets() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         v.setEdge("B", 2);
         v.setEdge("C", 3);
         Set<String> targets = v.getTargets();
@@ -141,7 +141,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
 
     @Test
     public void testGetEdgesDefensiveCopy() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         v.setEdge("B", 1);
         Map<String, Integer> edges = v.getEdges();
         edges.put("C", 2);
@@ -149,7 +149,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     }
     @Test
     public void testVertexToString() {
-        Vertex v = new Vertex("A");
+        Vertex<String> v = new Vertex<>("A");
         v.setEdge("B", 3);
         v.setEdge("C", 6);
         String s = v.toString();
