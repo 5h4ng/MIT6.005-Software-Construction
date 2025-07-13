@@ -12,10 +12,10 @@ import java.util.Set;
 
 /**
  * Tests for ConcreteVerticesGraph.
- * 
+ * <p>
  * This class runs the GraphInstanceTest tests against ConcreteVerticesGraph, as
  * well as tests for that particular implementation.
- * 
+ * <p>
  * Tests against the Graph spec should be in GraphInstanceTest.
  */
 public class ConcreteVerticesGraphTest extends GraphInstanceTest {
