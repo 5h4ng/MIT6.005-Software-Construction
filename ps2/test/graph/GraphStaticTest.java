@@ -11,7 +11,7 @@ import org.junit.Test;
 
 /**
  * Tests for static methods of Graph.
- * 
+ * <p>
  * To facilitate testing multiple implementations of Graph, instance methods are
  * tested in GraphInstanceTest.
  */
@@ -32,7 +32,7 @@ public class GraphStaticTest {
         assertEquals("expected empty() graph to have no vertices",
                 Collections.emptySet(), Graph.empty().vertices());
     }
-    
+
     @Test
     public void testEmptyVerticesWithIntegerLabel() {
         Graph<Integer> graph = Graph.empty();
