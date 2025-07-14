@@ -124,4 +124,13 @@ public class GraphPoetTest {
         assertEquals(expected, poet.poem(input));
         corpus.delete();
     }
+
+    @Test
+    public void testStarTrekExample() throws IOException {
+        File corpus = new File("test/poet/trek.txt");
+        GraphPoet poet = new GraphPoet(corpus);
+        String input = "Seek to explore new and exciting synergies!";
+        String expected = "Seek to explore strange new life and exciting synergies!";
+        assertEquals(expected, poet.poem(input));
+    }
 }
