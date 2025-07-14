@@ -5,6 +5,9 @@ package poet;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.List;
 
 import graph.Graph;
 
@@ -55,11 +58,14 @@ public class GraphPoet {
     private final Graph<String> graph = Graph.empty();
     
     // Abstraction function:
-    //   TODO
+    //   graph represents the word affinity graph deriving from a corpus of text.
+    //      - Each vertex is a word (lowercase, as defined above)
+    //      - There is a directed edge from w1 to w2 with weight n if w1 is immediately followed by w2 n times in the corpus
     // Representation invariant:
-    //   TODO
+    //      - All vertices are non-empty, lowercase, non-space, non-newline strings
+    //      - All edge weights >= 1
     // Safety from rep exposure:
-    //   TODO
+    //   All the fields are final and private.
     
     /**
      * Create a new poet with the graph from corpus (as described above).
@@ -68,10 +74,41 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-        throw new RuntimeException("not implemented");
+        StringBuilder input = new StringBuilder();
+        List<String> lines = Files.readAllLines(corpus.toPath());
+        for (String line : lines) {
+            input.append(line).append(" ");
+        }
+        String text = input.toString().trim();
+        String[] words = text.split("\\s+");
+
+        for (int i = 0; i < words.length - 1; i++) {
+            String w1 = words[i].toLowerCase();
+            String w2 = words[i + 1].toLowerCase();
+            graph.add(w1);
+            graph.add(w2);
+            int existingWeight = graph.targets(w1).getOrDefault(w2, 0);
+            graph.set(w1, w2, existingWeight + 1);
+        }
+        checkRep();
     }
     
-    // TODO checkRep
+    // checkRep
+    private void checkRep() {
+        for (String vertex : graph.vertices()) {
+            assert vertex.equals(vertex.toLowerCase());
+            assert !vertex.contains(" ");
+            assert !vertex.contains("\n");
+        }
+        for (String vertex1 : graph.vertices()) {
+            for (String vertex2 : graph.vertices()) {
+                if (graph.targets(vertex1).containsKey(vertex2)) {
+                    int weight = graph.targets(vertex1).get(vertex2);
+                    assert weight >= 1;
+                }
+            }
+        }
+    }
     
     /**
      * Generate a poem.
@@ -80,9 +117,38 @@ public class GraphPoet {
      * @return poem (as described above)
      */
     public String poem(String input) {
-        throw new RuntimeException("not implemented");
+        String[] words = input.split("\\s+");
+        StringBuilder result = new StringBuilder();
+        result.append(words[0]);
+        for (int i = 0; i < words.length - 1; i++) {
+            String w1 = words[i].toLowerCase();
+            String w2 = words[i + 1].toLowerCase();
+            String bestBridge = "";
+            int maxWeight = -1;
+
+            for (String b : graph.vertices()) {
+                if (graph.targets(w1).containsKey(b) && graph.targets(b).containsKey(w2)) {
+                    Integer w1b = graph.targets(w1).get(b);
+                    Integer bw2 = graph.targets(b).get(w2);
+                    int weight = w1b + bw2;
+                    if (weight > maxWeight) {
+                        maxWeight = weight;
+                        bestBridge = b;
+                    }
+                }
+            }
+
+            if (!bestBridge.isEmpty()) {
+                result.append(" ").append(bestBridge);
+            }
+            result.append(" ").append(words[i + 1]);
+        }
+        return result.toString();
     }
     
-    // TODO toString()
+    // toString()
+    public String toString() {
+        return graph.toString();
+    }
     
 }

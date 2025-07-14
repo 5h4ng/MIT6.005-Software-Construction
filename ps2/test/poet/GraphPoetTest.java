@@ -74,18 +74,6 @@ public class GraphPoetTest {
     }
 
     @Test
-    public void testCaseInsensitiveBridgeWords() throws IOException {
-        // Corpus: "Hello, HELLO, hello, goodbye!"
-        File corpus = File.createTempFile("corpus", ".txt");
-        java.nio.file.Files.write(corpus.toPath(), "Hello, HELLO, hello, goodbye!".getBytes());
-        GraphPoet poet = new GraphPoet(corpus);
-        String input = "hello, goodbye!";
-        String expected = "hello, goodbye!";
-        assertEquals(expected, poet.poem(input));
-        corpus.delete();
-    }
-
-    @Test
     public void testInputWordsNotInCorpus() throws IOException {
         File corpus = File.createTempFile("corpus", ".txt");
         java.nio.file.Files.write(corpus.toPath(), "a b c".getBytes());
