@@ -383,7 +383,71 @@ Standard Streams are a feature of many operating systems. By default, they read 
 
 ##### The Console
 
+A more advanced alternative to the Standard Streams is the Console. This is a single, predefined object of type [`Console`](https://docs.oracle.com/javase/8/docs/api/java/io/Console.html) that has most of the features provided by the Standard Streams, and others besides. The Console is particularly useful for secure password entry. 
 
+```java
+import java.io.Console;
+
+public class ConsoleDemo {
+    public static void main(String[] args) {
+        Console console = System.console();
+        if (console == null) {
+            System.out.println("No console available. Please run this from a command line.");
+            return;
+        }
+
+        String name = console.readLine("Enter your name: ");
+        char[] password = console.readPassword("Enter your password: ");
+    
+        console.printf("Welcome, %s!\n", name);
+        console.printf("Your password length is %d\n", password.length);
+    }
+}
+```
+#### Data Streams
+
+Data streams support binary I/O of primitive data type values (`boolean`, `char`, `byte`, `short`, `int`, `long`, `float`, and `double`) as well as String values.
+
+Then `DataStreams` opens an output stream. Since a `DataOutputStream` can only be created as a wrapper for an existing byte stream object, `DataStreams` provides a buffered file output byte stream.
+
+```java
+out = new DataOutputStream(new BufferedOutputStream(
+              new FileOutputStream(dataFile)));
+out.writeInt(100);
+out.writeDouble(3.14);
+out.writeUTF("hello");
+out.close();
+
+DataInputStream in = new DataInputStream(new FileInputStream("data.bin"));
+int num = in.readInt();
+double pi = in.readDouble();
+String str = in.readUTF();
+in.close();
+```
+
+Use DataStreams when you need efficient, precise, and structured binary I/O for primitive types or strings—especially for **custom binary file formats, network protocols, or cross-language data exchange.**
+
+For text data, object serialization, or high-level data handling, use the more appropriate Java APIs.
+
+#### Object Streams
+
+Just as data streams support I/O of primitive data types, object streams support I/O of objects. Most, but not all, standard classes support serialization of their objects. Those that do implement the marker interface [`Serializable`](https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html).
+
+**Serialization (writing an object):**
+
+```java
+ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("data.bin"));
+out.writeObject(myObject);
+out.close();
+```
+
+**Deserialization (reading an object):**
+
+```java
+ObjectInputStream in = new ObjectInputStream(new FileInputStream("data.bin"));
+MyClass obj = (MyClass) in.readObject();
+in.close();
+```
 
 ## Blocking
 
