@@ -475,3 +475,362 @@ In the Java Tutorials, read:
 - [All About Sockets ](https://docs.oracle.com/javase/tutorial/networking/sockets/index.html)(4 pages)
 
 This reading describes everything you need to know about creating server- and client-side sockets and writing to and reading from their I/O streams.
+
+In client-server applications, the server provides some service, such as processing database queries or sending out current stock prices. The client uses the service provided by the server, either displaying database query results to the user or making stock purchase recommendations to an investor. The communication that occurs between the client and the server must be reliable. That is, no data can be dropped and it must arrive on the client side in the same order in which the server sent it.
+
+TCP provides a reliable, point-to-point communication channel that client-server applications on the Internet use to communicate with each other. To communicate over TCP, a client program and a server program establish a connection to one another. Each program binds **a socket** to its end of the connection. To communicate, the client and the server each reads from and writes to the socket bound to the connection.
+
+### What is a socket?
+
+**Definition:**
+
+A *socket* is one endpoint of a two-way communication link between two programs running on the network. A socket is bound to a port number so that the TCP layer can identify the application that data is destined to be sent to.
+
+An endpoint is a combination of an **IP address and a port number**. Every TCP connection can be uniquely identified by its two endpoints. That way you can have multiple connections between your host and the server.
+
+### Reading from and Writing to a Socket
+
+The example program implements a client, [`EchoClient`](https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoClient.java), that connects to an echo server. The echo server receives data from its client and echoes it back. The example [`EchoServer`](https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java) implements an echo server.
+
+The `EchoClient` example creates a socket, thereby getting a connection to the echo server. It reads input from the user on the standard input stream, and then forwards that text to the echo server by writing the text to the socket. The server echoes the input back through the socket to the client. The client program reads and displays the data passed back to it from the server.
+
+```java
+import java.io.*;
+import java.net.*;
+
+public class EchoClient {
+    public static void main(String[] args) throws IOException {
+        if (args.length != 2) {
+            System.out.println("Usage: java EchoClient <host name> <port number>");
+            return;
+        }
+
+        String hostName = args[0];
+        int portNumber = Integer.parseInt(args[1]);
+
+
+        try (
+            Socket echoSocket = new Socket(hostName, portNumber);
+            PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))
+        ) {
+            System.out.println("Connected to server " + hostName + ":" + portNumber);
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                out.println(userInput); 
+                String response = in.readLine(); 
+                System.out.println("echo: " + response);
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("Don't know about host " + hostName);
+        } catch (IOException e) {
+            System.out.println("Couldn't get I/O for the connection to " + hostName);
+        }
+    }
+}
+```
+
+The example uses a syntax we haven’t seen: the [try-with-resources ](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)statement. This statement has the form:
+
+```java
+try (
+    // create new objects here that require cleanup after being used,
+    // and assign them to variables
+) {
+    // code here runs with those variables
+    // cleanup happens automatically after the code completes
+} catch(...) {
+    // you can include catch clauses if the code might throw exceptions
+}
+```
+
+1. Open a socket.
+2. Open an input stream and output stream to the socket.
+3. Read from and write to the stream according to the server's protocol.
+4. Close the streams.
+5. Close the socket.
+
+### Writing the Server Side of a Socket
+
+This section shows you how to write a server and the client that goes with it. The server in the client/server pair serves up Knock Knock jokes. Knock Knock jokes are favored by children and are usually vehicles for bad puns. They go like this:
+
+**Server**: "Knock knock!"
+**Client**: "Who's there?"
+**Server**: "Dexter."
+**Client**: "Dexter who?"
+**Server**: "Dexter halls with boughs of holly."
+**Client**: "Groan."
+
+The server program is implemented by two classes: [`KnockKnockServer`](https://docs.oracle.com/javase/tutorial/networking/sockets/examples/KnockKnockServer.java) and [`KnockKnockProtocol`](https://docs.oracle.com/javase/tutorial/networking/sockets/examples/KnockKnockProtocol.java).
+
+- `KnockKnockServer` contains the `main` method for the server program and performs the work of listening to the port, establishing connections, and reading from and writing to the socket. 
+- The class [`KnockKnockProtocol`](https://docs.oracle.com/javase/tutorial/networking/sockets/examples/KnockKnockProtocol.java) serves up the jokes. It keeps track of the current joke, the current state (sent knock knock, sent clue, and so on), and returns the various text pieces of the joke depending on the current state. 
+
+##### Protocol Interface
+
+```java
+// Protocol.java
+public interface Protocol {
+    /**
+     * Processes the client's input and returns the server's response.
+     * Return null or "Bye." to indicate the session should end.
+     */
+    String processInput(String input);
+}
+```
+
+##### Example Protocol Implementation
+
+```java
+// EchoProtocol.java
+public class EchoProtocol implements Protocol {
+    @Override
+    public String processInput(String input) {
+        if (input == null) {
+            return "Hello! Type anything, or 'bye' to quit.";
+        }
+        if ("bye".equalsIgnoreCase(input.trim())) {
+            return "Bye.";
+        }
+        return "Echo: " + input;
+    }
+}
+```
+
+######  Server Main Class Template
+
+```java
+import java.io.*;
+import java.net.*;
+
+public class ProtocolServer {
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("Usage: java ProtocolServer <port number>");
+            System.exit(1);
+        }
+        int portNumber = Integer.parseInt(args[0]);
+
+        try (
+            ServerSocket serverSocket = new ServerSocket(portNumber);
+            Socket clientSocket = serverSocket.accept();
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(clientSocket.getInputStream()))
+        ) {
+            String inputLine, outputLine;
+
+            // Instantiate your protocol handler
+            Protocol protocol = new EchoProtocol(); // Replace with your Protocol implementation
+            outputLine = protocol.processInput(null); // Initial server greeting
+            out.println(outputLine);
+
+            while ((inputLine = in.readLine()) != null) {
+                outputLine = protocol.processInput(inputLine);
+                out.println(outputLine);
+                if (outputLine == null || "Bye.".equals(outputLine))
+                    break;
+            }
+        } catch (IOException e) {
+            System.err.println("Exception: " + e.getMessage());
+        }
+    }
+}
+```
+
+##### Multithreaded template
+
+```java
+try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+    System.out.println("Server started on port " + portNumber);
+
+    // Accept multiple clients in a loop
+    while (true) {
+        Socket clientSocket = serverSocket.accept();
+        System.out.println("Accepted connection from " + clientSocket.getRemoteSocketAddress());
+        // Each client handled by a new thread
+        new Thread(new ClientHandler(clientSocket)).start();
+    }
+} catch (IOException e) {
+    System.err.println("Exception: " + e.getMessage());
+}
+```
+
+## Wire Protocals
+
+A **protocol** is a set of messages that can be exchanged by two communicating parties. A **wire protocol** in particular is a set of messages represented as byte sequences, like `hello world `and `bye `(assuming we’ve agreed on a way to encode those characters into bytes).
+
+Most Internet applications use simple ASCII-based wire protocols. You can use a program called Telnet to check them out. For example:
+
+#### HTTP
+
+HTTP is the foundational protocol for web communication, operating over port 80 by default.
+
+**Request from client to server:**
+
+```http
+GET / HTTP/1.1
+Host: www.eecs.mit.edu
+```
+
+- This request asks the server at `www.eecs.mit.edu` for the homepage (`/`) using HTTP/1.1.
+- The blank line signals the end of the request headers.
+
+**Typical server response:**
+
+```http
+HTTP/1.1 200 OK
+Date: Wed, 30 Jul 2025 10:00:00 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 12345
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Homepage | MIT EECS</title>
+  </head>
+  <body>
+    ... page content ...
+  </body>
+</html>
+```
+
+#### SMTP
+
+[Simple Mail Transfer Protocol (SMTP) ](https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol)is the protocol for sending email (different protocols are used for client programs that retrieve email from your inbox). Because the email system was designed in a time before spam, modern email communication is fraught with traps and heuristics designed to prevent abuse.
+
+```shell
+$ telnet dmz-mailsec-scanner-4.mit.edu 25
+Trying 18.9.25.15...
+Connected to dmz-mailsec-scanner-4.mit.edu.
+Escape character is '^]'.
+220 dmz-mailsec-scanner-4.mit.edu ESMTP Symantec Messaging Gateway
+HELO your-IP-address-here↵
+250 2.0.0 dmz-mailsec-scanner-4.mit.edu says HELO to your-ip-address:port
+MAIL FROM: <your-username-here@mit.edu>↵
+250 2.0.0 MAIL FROM accepted
+RCPT TO: <your-username-here@mit.edu>↵
+250 2.0.0 RCPT TO accepted
+DATA↵
+354 3.0.0 continue.  finished with "\r\n.\r\n"
+From: <your-username-here@mit.edu>↵
+To: <your-username-here@mit.edu>↵
+Subject: testing↵
+This is a hand-crafted artisanal email.↵
+.↵
+250 2.0.0 OK 99/00-11111-22222222
+QUIT↵
+221 2.3.0 dmz-mailsec-scanner-4.mit.edu closing connection
+Connection closed by foreign host.
+```
+
+### Designing a wire protocol
+
+When designing a wire protocol, apply the same rules of thumb you use for designing the operations of an abstract data type:
+
+- Keep the number of different messages **small** . It’s better to have a few commands and responses that can be combined rather than many complex messages.
+- Each message should have a well-defined purpose and **coherent** behavior.
+- The set of messages must be **adequate** for clients to make the requests they need to make and for servers to deliver the results.
+
+Just as we demand representation independence from our types, we should aim for **platform-independence** in our protocols. HTTP can be spoken by any web server and any web browser on any operating system. The protocol doesn’t say anything about how web pages are stored on disk, how they are prepared or generated by the server, what algorithms the client will use to render them, etc.
+
+We can also apply the three big ideas in this class:
+
+- **Safe from bugs**
+
+  - The protocol should be easy for clients and servers to generate and parse. Simpler code for reading and writing the protocol (whether written with a parser generator like ANTLR, with regular expressions, etc.) will have fewer opportunities for bugs.
+
+  - Consider the ways a broken or malicious client or server could stuff garbage data into the protocol to break the process on the other end.
+
+    Email spam is one example: when we spoke SMTP above, the mail server asked *us* to say who was sending the email, and there’s nothing in SMTP to prevent us from lying outright. We’ve had to build systems on top of SMTP to try to stop spammers who lie about `From: `addresses.
+
+    Security vulnerabilities are a more serious example. For example, protocols that allow a client to send requests with arbitrary amounts of data require careful handling on the server to avoid running out of buffer space, [or worse ](https://en.wikipedia.org/wiki/Buffer_overflow).
+
+- **Easy to understand** : for example, choosing a text-based protocol means that we can debug communication errors by reading the text of the client/server exchange. It even allows us to speak the protocol “by hand” as we saw above.
+
+- **Ready for change** : for example, HTTP includes the ability to specify a version number, so clients and servers can agree with one another which version of the protocol they will use. If we need to make changes to the protocol in the future, older clients or servers can continue to work by announcing the version they will use.
+
+[**Serialization** ](https://en.wikipedia.org/wiki/Serialization)is the process of transforming data structures in memory into a format that can be easily stored or transmitted (not the same as [serializability from *Thread Safety* ](https://ocw.mit.edu/ans7870/6/6.005/s16/classes/20-thread-safety/#serializability)). Rather than invent a new format for serializing your data between clients and servers, use an existing one. For example, [JSON (JavaScript Object Notation) ](https://en.wikipedia.org/wiki/JSON)is a simple, widely-used format for serializing basic values, arrays, and maps with string keys. 
+
+> https://github.com/alibaba/fastjson2
+
+### Specifying a wire protocol
+
+In order to precisely define for clients & servers what messages are allowed by a protocol, use a grammar.
+
+For example, here is a very small part of the HTTP 1.1 request grammar from [RFC 2616 section 5 ](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html):
+
+```python
+request ::= request-line
+            ((general-header | request-header | entity-header) CRLF)*
+            CRLF
+            message-body?
+request-line ::= method SPACE request-uri SPACE http-version CRLF
+method ::= "OPTIONS" | "GET" | "HEAD" | "POST" | ...
+...
+```
+
+The grammar is not enough: it fills a similar role to method signatures when defining an ADT. We still need the specifications:
+
+- **What are the preconditions of a message?** 
+- **What are the postconditions?**
+
+## Testing client/server code
+
+Remember that [concurrency is hard to test and debug ](https://ocw.mit.edu/ans7870/6/6.005/s16/classes/19-concurrency/#concurrency_is_hard_to_test_and_debug). We can’t reliably reproduce race conditions, and the network adds a source of latency that is entirely beyond our control. You need to design for concurrency and argue carefully for the correctness of your code.
+
+### Separate network code from data structures and algorithms
+
+Most of the ADTs in your client/server program don’t need to rely on networking. Make sure you specify, test, and implement them as separate components that are safe from bugs, easy to understand, and ready for change — in part because they don’t involve any networking code.
+
+### Separate socket code from stream code
+
+A function or module that needs to read from and write to a socket may only need access to the input/output streams, not to the socket itself. This design allows you to test the module by connecting it to streams that don’t come from a socket.
+
+Two useful Java classes for this are [`ByteArray­InputStream `](https://docs.oracle.com/javase/8/docs/api/?java/io/ByteArrayInputStream.html)and [`ByteArray­OutputStream `](https://docs.oracle.com/javase/8/docs/api/?java/io/ByteArrayOutputStream.html). Suppose we want to test this method:
+
+```java
+void upperCaseLine(BufferedReader input, PrintWriter output) throws IOException
+  requires: input and output are open
+  effects: attempts to read a line from input
+           and attempts to write that line, in upper case, to output
+```
+
+The method is normally used with a socket:
+
+```java
+Socket sock = ...
+
+// read a stream of characters from the socket input stream
+BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+// write characters to the socket output stream
+PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+
+upperCaseLine(in, out);
+```
+
+If the case conversion is a function we implement, it should already be specified, tested, and implemented separately. But now we can now also **test** the read/write behavior of `upperCaseLine `:
+
+```java
+// fixed input stream of "dog" (line 1) and "cat" (line 2)
+String inString = "dog\ncat\n";
+ByteArrayInputStream inBytes = new ByteArrayInputStream(inString.getBytes());
+ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+
+// read a stream of characters from the fixed input string
+BufferedReader in = new BufferedReader(new InputStreamReader(inBytes));
+// write characters to temporary storage
+PrintWriter out = new PrintWriter(outBytes, true);
+
+upperCaseLine(in, out);
+
+// check that it read the expected amount of input
+assertEquals("expected input line 2 remaining", "cat", in.readLine());
+// check that it wrote the expected output
+assertEquals("expected upper case of input line 1", "DOG\n", outBytes.toString());
+```
+
+In this test, `inBytes `and `outBytes `are [**test stubs** ](https://ocw.mit.edu/ans7870/6/6.005/s16/classes/03-testing/#unit_testing_and_stubs). To isolate and test just `upperCaseLine `, we replace the components it normally depends on (input/output streams from a socket) with components that satisfy the same spec but have canned behavior: an input stream with fixed input, and an output stream that stores the output in memory.
+
+Testing strategies for more complex modules might use a **mock object** to simulate the behavior of a real client or server by producing entire canned sequences of interaction and asserting the correctness of each message received from the other component.
