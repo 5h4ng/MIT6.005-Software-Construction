@@ -17,7 +17,11 @@ package expressivo;
 public interface Expression {
     
     // Datatype definition
-    //   TODO
+    //   Expression =
+    //      Number(value: double) +
+    //      Variable(name: String) +
+    //      Addition(left: Expression, right: Expression) +
+    //      Multiplication(left: Expression, rightL: Expression)
     
     /**
      * Parse an expression.
@@ -51,7 +55,54 @@ public interface Expression {
      */
     @Override
     public int hashCode();
-    
+
+    // factory methods
+    /**
+     * Create a variable expression.
+     *
+     * @param var variable name; must be a nonempty string of one or more case-sensitive letters (a-z, A-Z)
+     * @return a Variable expression representing the variable named var
+     */
+    static Expression make(String var) {
+        return new Variable(var);
+    }
+
+    /**
+     * Create a numeric constant expression.
+     *
+     * @param val a non-negative number (integer or floating-point)
+     * @return a Number expression representing the constant value val
+     */
+    static Expression make(double val) {
+        return new Number(val);
+    }
+
+    /**
+     * Create an addition expression: left + right.
+     * The order of left and right matters.
+     *
+     * @param left  left operand (must not be null)
+     * @param right right operand (must not be null)
+     * @return an Addition expression representing (left + right)
+     */
+    static Expression add(Expression left, Expression right) {
+        return new Addition(left, right);
+    }
+
+    /**
+     * Create a multiplication expression: left * right.
+     * The order of left and right matters.
+     *
+     * @param left  left operand (must not be null)
+     * @param right right operand (must not be null)
+     * @return a Multiplication expression representing (left * right)
+     */
+    static Expression multiply(Expression left, Expression right) {
+        return new Multiplication(left, right);
+    }
+
+
+
     // TODO more instance methods
     
 }
