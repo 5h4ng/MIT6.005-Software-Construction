@@ -20,18 +20,18 @@ public class ExpressionParser extends Parser {
   protected static final PredictionContextCache _sharedContextCache =
     new PredictionContextCache();
   public static final int
-    T__0=1, T__1=2, T__2=3, NUMBER=4, SPACES=5;
+    T__0=1, T__1=2, T__2=3, T__3=4, NUMBER=5, VARIABLE=6, SPACES=7;
   public static final int
-    RULE_root = 0, RULE_sum = 1, RULE_primitive = 2;
+    RULE_root = 0, RULE_expr = 1, RULE_term = 2, RULE_factor = 3;
   public static final String[] ruleNames = {
-    "root", "sum", "primitive"
+    "root", "expr", "term", "factor"
   };
 
   private static final String[] _LITERAL_NAMES = {
-    null, "'+'", "'('", "')'"
+    null, "'+'", "'*'", "'('", "')'"
   };
   private static final String[] _SYMBOLIC_NAMES = {
-    null, null, null, null, "NUMBER", "SPACES"
+    null, null, null, null, null, "NUMBER", "VARIABLE", "SPACES"
   };
   public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -100,8 +100,8 @@ public class ExpressionParser extends Parser {
     _interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
   }
   public static class RootContext extends ParserRuleContext {
-    public SumContext sum() {
-      return getRuleContext(SumContext.class,0);
+    public ExprContext expr() {
+      return getRuleContext(ExprContext.class,0);
     }
     public TerminalNode EOF() { return getToken(ExpressionParser.EOF, 0); }
     public RootContext(ParserRuleContext parent, int invokingState) {
@@ -124,9 +124,9 @@ public class ExpressionParser extends Parser {
     try {
       enterOuterAlt(_localctx, 1);
       {
-      setState(6);
-      sum();
-      setState(7);
+      setState(8);
+      expr();
+      setState(9);
       match(EOF);
       }
     }
@@ -141,49 +141,49 @@ public class ExpressionParser extends Parser {
     return _localctx;
   }
 
-  public static class SumContext extends ParserRuleContext {
-    public List<PrimitiveContext> primitive() {
-      return getRuleContexts(PrimitiveContext.class);
+  public static class ExprContext extends ParserRuleContext {
+    public List<TermContext> term() {
+      return getRuleContexts(TermContext.class);
     }
-    public PrimitiveContext primitive(int i) {
-      return getRuleContext(PrimitiveContext.class,i);
+    public TermContext term(int i) {
+      return getRuleContext(TermContext.class,i);
     }
-    public SumContext(ParserRuleContext parent, int invokingState) {
+    public ExprContext(ParserRuleContext parent, int invokingState) {
       super(parent, invokingState);
     }
-    @Override public int getRuleIndex() { return RULE_sum; }
+    @Override public int getRuleIndex() { return RULE_expr; }
     @Override
     public void enterRule(ParseTreeListener listener) {
-      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).enterSum(this);
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).enterExpr(this);
     }
     @Override
     public void exitRule(ParseTreeListener listener) {
-      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).exitSum(this);
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).exitExpr(this);
     }
   }
 
-  public final SumContext sum() throws RecognitionException {
-    SumContext _localctx = new SumContext(_ctx, getState());
-    enterRule(_localctx, 2, RULE_sum);
+  public final ExprContext expr() throws RecognitionException {
+    ExprContext _localctx = new ExprContext(_ctx, getState());
+    enterRule(_localctx, 2, RULE_expr);
     int _la;
     try {
       enterOuterAlt(_localctx, 1);
       {
-      setState(9);
-      primitive();
-      setState(14);
+      setState(11);
+      term();
+      setState(16);
       _errHandler.sync(this);
       _la = _input.LA(1);
       while (_la==T__0) {
         {
         {
-        setState(10);
+        setState(12);
         match(T__0);
-        setState(11);
-        primitive();
+        setState(13);
+        term();
         }
         }
-        setState(16);
+        setState(18);
         _errHandler.sync(this);
         _la = _input.LA(1);
       }
@@ -200,47 +200,114 @@ public class ExpressionParser extends Parser {
     return _localctx;
   }
 
-  public static class PrimitiveContext extends ParserRuleContext {
-    public TerminalNode NUMBER() { return getToken(ExpressionParser.NUMBER, 0); }
-    public SumContext sum() {
-      return getRuleContext(SumContext.class,0);
+  public static class TermContext extends ParserRuleContext {
+    public List<FactorContext> factor() {
+      return getRuleContexts(FactorContext.class);
     }
-    public PrimitiveContext(ParserRuleContext parent, int invokingState) {
+    public FactorContext factor(int i) {
+      return getRuleContext(FactorContext.class,i);
+    }
+    public TermContext(ParserRuleContext parent, int invokingState) {
       super(parent, invokingState);
     }
-    @Override public int getRuleIndex() { return RULE_primitive; }
+    @Override public int getRuleIndex() { return RULE_term; }
     @Override
     public void enterRule(ParseTreeListener listener) {
-      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).enterPrimitive(this);
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).enterTerm(this);
     }
     @Override
     public void exitRule(ParseTreeListener listener) {
-      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).exitPrimitive(this);
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).exitTerm(this);
     }
   }
 
-  public final PrimitiveContext primitive() throws RecognitionException {
-    PrimitiveContext _localctx = new PrimitiveContext(_ctx, getState());
-    enterRule(_localctx, 4, RULE_primitive);
+  public final TermContext term() throws RecognitionException {
+    TermContext _localctx = new TermContext(_ctx, getState());
+    enterRule(_localctx, 4, RULE_term);
+    int _la;
     try {
-      setState(22);
+      enterOuterAlt(_localctx, 1);
+      {
+      setState(19);
+      factor();
+      setState(24);
+      _errHandler.sync(this);
+      _la = _input.LA(1);
+      while (_la==T__1) {
+        {
+        {
+        setState(20);
+        match(T__1);
+        setState(21);
+        factor();
+        }
+        }
+        setState(26);
+        _errHandler.sync(this);
+        _la = _input.LA(1);
+      }
+      }
+    }
+    catch (RecognitionException re) {
+      _localctx.exception = re;
+      _errHandler.reportError(this, re);
+      _errHandler.recover(this, re);
+    }
+    finally {
+      exitRule();
+    }
+    return _localctx;
+  }
+
+  public static class FactorContext extends ParserRuleContext {
+    public TerminalNode NUMBER() { return getToken(ExpressionParser.NUMBER, 0); }
+    public TerminalNode VARIABLE() { return getToken(ExpressionParser.VARIABLE, 0); }
+    public ExprContext expr() {
+      return getRuleContext(ExprContext.class,0);
+    }
+    public FactorContext(ParserRuleContext parent, int invokingState) {
+      super(parent, invokingState);
+    }
+    @Override public int getRuleIndex() { return RULE_factor; }
+    @Override
+    public void enterRule(ParseTreeListener listener) {
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).enterFactor(this);
+    }
+    @Override
+    public void exitRule(ParseTreeListener listener) {
+      if ( listener instanceof ExpressionListener ) ((ExpressionListener)listener).exitFactor(this);
+    }
+  }
+
+  public final FactorContext factor() throws RecognitionException {
+    FactorContext _localctx = new FactorContext(_ctx, getState());
+    enterRule(_localctx, 6, RULE_factor);
+    try {
+      setState(33);
       switch (_input.LA(1)) {
       case NUMBER:
         enterOuterAlt(_localctx, 1);
         {
-        setState(17);
+        setState(27);
         match(NUMBER);
         }
         break;
-      case T__1:
+      case VARIABLE:
         enterOuterAlt(_localctx, 2);
         {
-        setState(18);
-        match(T__1);
-        setState(19);
-        sum();
-        setState(20);
+        setState(28);
+        match(VARIABLE);
+        }
+        break;
+      case T__2:
+        enterOuterAlt(_localctx, 3);
+        {
+        setState(29);
         match(T__2);
+        setState(30);
+        expr();
+        setState(31);
+        match(T__3);
         }
         break;
       default:
@@ -259,14 +326,17 @@ public class ExpressionParser extends Parser {
   }
 
   public static final String _serializedATN =
-    "\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\7\33\4\2\t\2\4"+
-      "\3\t\3\4\4\t\4\3\2\3\2\3\2\3\3\3\3\3\3\7\3\17\n\3\f\3\16\3\22\13\3"+
-      "\3\4\3\4\3\4\3\4\3\4\5\4\31\n\4\3\4\2\2\5\2\4\6\2\2\31\2\b\3\2\2\2"+
-      "\4\13\3\2\2\2\6\30\3\2\2\2\b\t\5\4\3\2\t\n\7\2\2\3\n\3\3\2\2\2\13"+
-      "\20\5\6\4\2\f\r\7\3\2\2\r\17\5\6\4\2\16\f\3\2\2\2\17\22\3\2\2\2\20"+
-      "\16\3\2\2\2\20\21\3\2\2\2\21\5\3\2\2\2\22\20\3\2\2\2\23\31\7\6\2\2"+
-      "\24\25\7\4\2\2\25\26\5\4\3\2\26\27\7\5\2\2\27\31\3\2\2\2\30\23\3\2"+
-      "\2\2\30\24\3\2\2\2\31\7\3\2\2\2\4\20\30";
+    "\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\t&\4\2\t\2\4\3"+
+      "\t\3\4\4\t\4\4\5\t\5\3\2\3\2\3\2\3\3\3\3\3\3\7\3\21\n\3\f\3\16\3\24"+
+      "\13\3\3\4\3\4\3\4\7\4\31\n\4\f\4\16\4\34\13\4\3\5\3\5\3\5\3\5\3\5"+
+      "\3\5\5\5$\n\5\3\5\2\2\6\2\4\6\b\2\2%\2\n\3\2\2\2\4\r\3\2\2\2\6\25"+
+      "\3\2\2\2\b#\3\2\2\2\n\13\5\4\3\2\13\f\7\2\2\3\f\3\3\2\2\2\r\22\5\6"+
+      "\4\2\16\17\7\3\2\2\17\21\5\6\4\2\20\16\3\2\2\2\21\24\3\2\2\2\22\20"+
+      "\3\2\2\2\22\23\3\2\2\2\23\5\3\2\2\2\24\22\3\2\2\2\25\32\5\b\5\2\26"+
+      "\27\7\4\2\2\27\31\5\b\5\2\30\26\3\2\2\2\31\34\3\2\2\2\32\30\3\2\2"+
+      "\2\32\33\3\2\2\2\33\7\3\2\2\2\34\32\3\2\2\2\35$\7\7\2\2\36$\7\b\2"+
+      "\2\37 \7\5\2\2 !\5\4\3\2!\"\7\6\2\2\"$\3\2\2\2#\35\3\2\2\2#\36\3\2"+
+      "\2\2#\37\3\2\2\2$\t\3\2\2\2\5\22\32#";
   public static final ATN _ATN =
     new ATNDeserializer().deserialize(_serializedATN.toCharArray());
   static {
