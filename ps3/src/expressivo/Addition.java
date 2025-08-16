@@ -66,6 +66,11 @@ public class Addition implements Expression {
 
     @Override
     public Expression simplify(Map<String, Double> environment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Expression updatedExpr1 = expr1.simplify(environment);
+        Expression updatedExpr2 = expr2.simplify(environment);
+        if (updatedExpr1.isNumber() && updatedExpr2.isNumber()) {
+            return Expression.make(Double.parseDouble(updatedExpr1.toString()) + Double.valueOf(updatedExpr2.toString()));
+        }
+        return Expression.add(updatedExpr1, updatedExpr2);
     }
 }

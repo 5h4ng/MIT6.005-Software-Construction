@@ -162,6 +162,8 @@ public interface Expression {
 
     /**
      * Simplify an expression.
+     * The only required simplification is that if the substituted polynomial is a constant expression,
+     * with no variables remaining, then simplification must reduce it to a single number, with no operators remaining either.
        * <p>Examples:</p>
        * <ul>
        *   <li>(x * x * x) with environment {x=5, y=10, z=20} → Number(125)</li>
@@ -169,6 +171,7 @@ public interface Expression {
        *   <li>(1 + 2 * 3 + 8 * 0.5) with empty environment → Number(11.000)</li>
        *   <li>(x * x * y) with {x=1,y=3} → Number(3)   (must not return 1*1*3)</li>
        * </ul>
+     *
      * @param environment maps variable to values.
      * @return an expression equal to the input, but after substituting every variable v that appears in both
      *         the expression and the environment with its value

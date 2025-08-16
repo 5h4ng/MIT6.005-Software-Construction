@@ -7,6 +7,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import java.util.Map;
+
 /**
  * Tests for the Expression abstract data type.
  */
@@ -336,5 +338,61 @@ public class ExpressionTest {
         );
 
         assertEquals(expected, derivative);
+    }
+
+    // ------------------ Expression.simplify() tests ------------------
+
+    @Test
+    public void testSimplifyConstantExpression() {
+        // (2*3)+4 with empty environment = 10
+        Expression expr = Expression.add(
+                Expression.multiply(Expression.make(2), Expression.make(3)),
+                Expression.make(4)
+        );
+        Expression result = expr.simplify(Map.of());
+        assertEquals(Expression.make(10), result);
+    }
+
+    @Test
+    public void testSimplifyVariableNotInEnvironment() {
+        Expression expr = Expression.add(Expression.make("x"), Expression.make(2));
+        Expression result = expr.simplify(Map.of()); // no substitution
+        assertEquals(expr, result); // stays the same
+    }
+
+    @Test
+    public void testSimplifyVariableInEnvironment() {
+        Expression expr = Expression.add(Expression.make("x"), Expression.make(2));
+        Expression result = expr.simplify(Map.of("x", 3.0));
+        // should become 3+2 = 5
+        assertEquals(Expression.make(5), result);
+    }
+
+    @Test
+    public void testSimplifyMultipleVariablesPartial() {
+        // x*x + y, env {x=2}
+        Expression expr = Expression.add(
+                Expression.multiply(Expression.make("x"), Expression.make("x")),
+                Expression.make("y")
+        );
+        Expression result = expr.simplify(Map.of("x", 2.0));
+        // expect 4 + y (not just a number)
+        Expression expected = Expression.add(Expression.make(4), Expression.make("y"));
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testSimplifyPartialEnvironment() {
+        Expression expr = Expression.add(Expression.make("x"), Expression.make("y"));
+        Expression result = expr.simplify(Map.of("x", 3.0));
+        Expression expected = Expression.add(Expression.make(3), Expression.make("y"));
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testSimplifyAllVariablesReplaced() {
+        Expression expr = Expression.multiply(Expression.make("x"), Expression.make("y"));
+        Expression result = expr.simplify(Map.of("x", 2.0, "y", 4.0));
+        assertEquals(Expression.make(8), result);
     }
 }
