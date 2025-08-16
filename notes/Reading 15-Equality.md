@@ -126,7 +126,7 @@ public boolean equals (Object thatObject) {
 }
 ```
 
-> using `instanceof `is dynamic type checking, not the static type checking we vastly prefer. In general, using `instanceof `in object-oriented programming is a bad smell. In 6.005 — and this is another of our rules that holds true in most good Java programming — **`instanceof `is disallowed anywhere except for implementing `equals `**.
+> using `instanceof `is dynamic type checking, not the static type checking we vastly prefer. In general, using `instanceof `in object-oriented programming is a bad smell. In 6.005 — and this is a（nother of our rules that holds true in most good Java programming — **`instanceof `is disallowed anywhere except for implementing `equals `**.
 
 ## The Object Contract
 
