@@ -42,6 +42,11 @@ public class Number implements Expression {
         return Objects.hash(value);
     }
 
+    @Override
+    public Expression differentiate(String variable) {
+        return new Number(0);
+    }
+
 }
 
 

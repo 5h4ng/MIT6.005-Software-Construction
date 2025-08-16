@@ -53,5 +53,14 @@ public class Variable implements Expression {
         return Objects.hash(var);
     }
 
+    @Override
+    public Expression differentiate(String variable) {
+        if (this.var.equals(variable)) {
+            return new Number(1);
+        } else {
+            return new Number(0);
+        }
+    }
+
 
 }

@@ -43,4 +43,12 @@ public class Multiplication implements Expression {
     public int hashCode() {
         return Objects.hash(expr1, expr2);
     }
+
+    @Override
+    public Expression differentiate(String variable) {
+        return Expression.add(
+                Expression.multiply(expr1, expr2.differentiate(variable)),
+                Expression.multiply(expr2, expr1.differentiate(variable))
+        );
+    }
 }

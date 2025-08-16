@@ -48,4 +48,8 @@ public class Addition implements Expression {
         return Objects.hash(expr1, expr2);
     }
 
+    @Override
+    public Expression differentiate(String variable) {
+        return Expression.add(expr1.differentiate(variable),  expr2.differentiate(variable));
+    }
 }
