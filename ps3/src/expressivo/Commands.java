@@ -43,8 +43,7 @@ public class Commands {
      */
     public static String simplify(String expression, Map<String,Double> environment) {
         Expression expr = Expression.parse(expression);
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        return expr.simplify(environment).toString();
     }
     
 }
