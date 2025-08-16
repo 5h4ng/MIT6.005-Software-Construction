@@ -3,6 +3,7 @@
  */
 package expressivo;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.util.Map;
 
 /**
@@ -24,7 +25,8 @@ public class Commands {
      * @throws IllegalArgumentException if the expression or variable is invalid
      */
     public static String differentiate(String expression, String variable) {
-        throw new RuntimeException("unimplemented");
+        Expression expr = Expression.parse(expression);
+        return expr.differentiate(variable).toString();
     }
     
     /**
@@ -40,7 +42,9 @@ public class Commands {
      * @throws IllegalArgumentException if the expression is invalid
      */
     public static String simplify(String expression, Map<String,Double> environment) {
-        throw new RuntimeException("unimplemented");
+        Expression expr = Expression.parse(expression);
+        // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

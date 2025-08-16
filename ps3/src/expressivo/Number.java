@@ -1,5 +1,6 @@
 package expressivo;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -43,8 +44,23 @@ public class Number implements Expression {
     }
 
     @Override
+    public boolean isNumber() {
+        return true;
+    }
+
+    @Override
+    public boolean isVariable() {
+        return false;
+    }
+
+    @Override
     public Expression differentiate(String variable) {
         return new Number(0);
+    }
+
+    @Override
+    public Expression simplify(Map<String, Double> environment) {
+        return this;
     }
 
 }

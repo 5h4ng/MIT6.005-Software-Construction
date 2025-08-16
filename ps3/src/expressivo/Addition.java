@@ -1,6 +1,7 @@
 package expressivo;
 
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,5 +52,20 @@ public class Addition implements Expression {
     @Override
     public Expression differentiate(String variable) {
         return Expression.add(expr1.differentiate(variable),  expr2.differentiate(variable));
+    }
+
+    @Override
+    public boolean isNumber() {
+        return false;
+    }
+
+    @Override
+    public boolean isVariable() {
+        return false;
+    }
+
+    @Override
+    public Expression simplify(Map<String, Double> environment) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -140,11 +141,40 @@ public interface Expression {
         return new Multiplication(left, right);
     }
 
-
-
-    // TODO more instance methods
+    /**
+     * Calculate and produce an expression with the derivative of the input
+     * with respect to the variable. The result is not simplified.
+     *
+     * @param variable a String represents the variable
+     * @return a unsimplified result of d(Expression)/d(variable)
+     */
     public Expression differentiate(String variable);
-    
+
+    /**
+     * @return true if this is a Number, otherwise false
+     */
+    boolean isNumber();
+
+    /**
+     * @return true if this is a variable, otherwise false
+     */
+    boolean isVariable();
+
+    /**
+     * Simplify an expression.
+       * <p>Examples:</p>
+       * <ul>
+       *   <li>(x * x * x) with environment {x=5, y=10, z=20} → Number(125)</li>
+       *   <li>(x * x * x + y * y * y) with environment {y=10} → x*x*x + Number(1000)</li>
+       *   <li>(1 + 2 * 3 + 8 * 0.5) with empty environment → Number(11.000)</li>
+       *   <li>(x * x * y) with {x=1,y=3} → Number(3)   (must not return 1*1*3)</li>
+       * </ul>
+     * @param environment maps variable to values.
+     * @return an expression equal to the input, but after substituting every variable v that appears in both
+     *         the expression and the environment with its value
+     */
+    public Expression simplify(Map<String, Double> environment);
+
 }
 
 /** Make an Expression from a parse tree. */

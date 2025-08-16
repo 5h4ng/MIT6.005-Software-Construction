@@ -1,5 +1,6 @@
 package expressivo;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,4 +52,24 @@ public class Multiplication implements Expression {
                 Expression.multiply(expr2, expr1.differentiate(variable))
         );
     }
+
+    @Override
+    public boolean isNumber() {
+        return false;
+    }
+
+    @Override
+    public boolean isVariable() {
+        return false;
+    }
+
+    @Override
+    public Expression simplify(Map<String, Double> environment) {
+        // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+
+
 }
