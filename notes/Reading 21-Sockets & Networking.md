@@ -53,6 +53,8 @@ When a client connects to a server, that outgoing connection also uses a port nu
 
 A [**socket** ](https://en.wikipedia.org/wiki/Network_socket)represents one end of the connection between client and server.
 
+> It is an abstraction of the IP address + port number
+
 - A **listening socket** is used by a server process to wait for connections from remote clients.
 
   In Java, use [`ServerSocket `](https://docs.oracle.com/javase/8/docs/api/?java/net/ServerSocket.html)to make a listening socket, and use its [`accept `](https://docs.oracle.com/javase/8/docs/api/java/net/ServerSocket.html#accept--)method to listen to it.
