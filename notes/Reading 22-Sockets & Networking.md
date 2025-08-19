@@ -51,3 +51,35 @@ Unlike the streams of bytes sent and received by sockets, these synchronized que
 ## Implementing message passing with queues
 
 You can see all the code for this example on GitHub: [**squarer example** ](https://github.com/mit6005/sp16-ex22-square). 
+
+```mermaid
+sequenceDiagram
+    participant Main as Main Thread
+    participant ReqQ as Requests Queue
+    participant Squarer as Squarer Thread
+    participant RepQ as Replies Queue
+
+    Main->>ReqQ: put(42)
+    Squarer->>ReqQ: take() → 42
+    activate Squarer
+    Squarer->>Squarer: compute 42 * 42 = 1764
+    Squarer->>RepQ: put(SquareResult(42,1764))
+    deactivate Squarer
+    RepQ->>Main: take() → SquareResult(42,1764)
+```
+
+## Thread safety arguments with message passing
+
+A thread safety argument with message passing might rely on:
+
+- **Existing threadsafe data types** for the synchronized queue. This queue is definitely shared and definitely mutable, so we must ensure it is safe for concurrency.
+- **Immutability** of messages or data that might be accessible to multiple threads at the same time.
+- **Confinement** of data to individual producer/consumer threads. Local variables used by one producer or consumer are not visible to other threads, which only communicate with one another using messages in the queue.
+- **Confinement** of mutable messages or data that are sent over the queue but will only be accessible to one thread at a time. This argument must be carefully articulated and implemented. But if one module drops all references to some mutable data like a hot potato as soon as it puts them onto a queue to be delivered to another thread, only one thread will have access to those data at a time, precluding concurrent access.
+
+In comparison to synchronization, message passing can make it easier for each module in a concurrent system to maintain its own thread safety invariants. We don’t have to reason about multiple threads accessing shared data if the data are instead transferred between modules using a threadsafe communication channel.
+
+## Summary
+
+- Rather than synchronize with locks, message passing systems synchronize on a shared communication channel, e.g. a stream or a queue.
+- Threads communicating with blocking queues is a useful pattern for message passing within a single process.
