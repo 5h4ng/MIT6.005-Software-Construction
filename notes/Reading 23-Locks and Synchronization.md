@@ -166,5 +166,151 @@ Synchronized regions like this provide **mutual exclusion**: only one thread at 
 
 Locks are used to **guard** a shared data variable, like the account balance shown here. If all accesses to a data are guarded (surrounded by a synchronized block) by the same lock object, then those accesses will be guaranteed bt be atomic - uninterrupted by other threads.
 
+Because every object in Java has a lock implicitly associated with it, you might think that simply owing an object's lock would preven t other threads from accessing that object. **That is not the case**. Acquiring the lock associated with object `obj` using 
+
+```java
+synchronized (obj) {...}
+```
+
+in thread *t* does one thing and one thing only: prevents other threads from entering `synchronized(obj)` block, until thread *t* finishes its synchronized block. That's it.
+
+Locks only provide mutual exclusion with other threads that acquire the same lock. All accesses to a data variable must be guarded by the same lock. You might guard an entire collection of variables behind a single lock, but all modules must agree on which lock they will all acquire and release.
+
+## Monitor pattern
+
+Real-world example
+
+> Imagine a shared office printer that several employees need to use. The printer can only handle one print job at a time to avoid mixing up pages from different documents. This scenario is analogous to the Monitor design pattern in programming.
+>
+> In this example, the printer represents the shared resource, and the employees are analogous to threads. A system is set up where each employee must request access to the printer before starting their print job. This system ensures that only one employee (or "thread") can use the printer at a time, preventing any overlap or interference between jobs. Once a print job is complete, the next employee in the queue can access the printer. This mechanism mirrors the Monitor pattern's way of controlling access to a shared resource, ensuring orderly and safe use by multiple "threads" (employees).
+
+In plain words
+
+> Monitor pattern is used to enforce single-threaded access to data. Only one thread at a time is allowed to execute code within the monitor object.
+
+![Monitor sequence diagram](assets/monitor-sequence-diagram.235cb4b0.png)
+
+
+
+When you are writing methods of a class, the most convenient lock is the object instance itself, i.e. `this `. As a simple approach, we can guard the entire rep of a class by wrapping all accesses to the rep inside `synchronized (this) `.
+
+```java
+/** SimpleBuffer is a threadsafe EditBuffer with a simple rep. */
+public class SimpleBuffer implements EditBuffer {
+    private String text;
+    ...
+    public SimpleBuffer() {
+        synchronized (this) {
+            text = "";
+            checkRep();
+        }
+    }
+    public void insert(int pos, String ins) {
+        synchronized (this) {
+            text = text.substring(0, pos) + ins + text.substring(pos);
+            checkRep();
+        }
+    }
+    public void delete(int pos, int len) {
+        synchronized (this) {
+            text = text.substring(0, pos) + text.substring(pos+len);
+            checkRep();
+        }
+    }
+    public int length() {
+        synchronized (this) {
+            return text.length();
+        }
+    }
+    public String toString() {
+        synchronized (this) {
+            return text;
+        }
+    }
+}
+```
+
+Note the very careful discipline here. ***Every* method that touches the rep must be guarded with the lock — even apparently small and trivial ones like `length() `and `toString() `. This is because reads must be guarded as well as writes — if reads are left unguarded, then they may be able to see the rep in a partially-modified state.**
+
+This approach is called the **monitor pattern** . A monitor is a class whose methods are mutually exclusive, so that only one thread can be inside an instance of the class at a time.
+
+Java provides some syntactic sugar for the monitor pattern. If you add the keyword `synchronized `to a method signature, then Java will act as if you wrote `synchronized (this) `around the method body. So the code below is an equivalent way to implement the synchronized `SimpleBuffer `:
+
+```java
+/** SimpleBuffer is a threadsafe EditBuffer with a simple rep. */
+public class SimpleBuffer implements EditBuffer {
+    private String text;
+    ...
+    public SimpleBuffer() {
+        text = "";
+        checkRep();
+    }
+    public synchronized void insert(int pos, String ins) {
+        text = text.substring(0, pos) + ins + text.substring(pos);
+        checkRep();
+    }
+    public synchronized void delete(int pos, int len) {
+        text = text.substring(0, pos) + text.substring(pos+len);
+        checkRep();
+    }
+    public synchronized int length() {
+        return text.length();
+    }
+    public synchronized String toString() {
+        return text;
+    }
+}
+```
+
+Notice that the `SimpleBuffer `constructor doesn’t have a `synchronized `keyword. Java actually forbids it, syntactically, because an object under construction is expected to be confined to a single thread until it has returned from its constructor. So synchronizing constructors should be unnecessary.
+
+In the Java Tutorials, read:
+
+- [Synchronized Methods ](https://docs.oracle.com/javase/tutorial/essential/concurrency/syncmeth.html)(1 page)
+- [Intrinsic Locks and Synchronization ](https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html)(1 page)
+
+> Making methods synchronized has two effects:
+>
+> 1. It is not possible for two invocations of synchronized methods on the same object to interleave.
+> 2. When a sychronized method exists, it automatically establishes a happens-before relationship with *any subsequent invocation* of a synchronized method for the same object.
+
+## Thread safety argument with synchronization
+
+Now that we’re protecting `SimpleBuffer `’s rep with a lock, we can write a better thread safety argument:
+
+```java
+/** SimpleBuffer is a threadsafe EditBuffer with a simple rep. */
+public class SimpleBuffer implements EditBuffer {
+    private String text;
+    // Rep invariant: 
+    //   text != null
+    // Abstraction function: 
+    //   represents the sequence text[0],...,text[text.length()-1]
+    // Thread safety argument:
+    //   all accesses to text happen within SimpleBuffer methods,
+    //   which are all guarded by SimpleBuffer's lock
+```
+
+The same argument works for `GapBuffer `, if we use the monitor pattern to synchronize all its methods.
+
+Note that the encapsulation of the class, the absence of rep exposure, is very important for making this argument. If text were public:
+
+```java
+    public String text;
+```
+
+then clients outside `SimpleBuffer `would be able to read and write it without knowing that they should first acquire the lock, and `SimpleBuffer `would no longer be threadsafe.
+
+> Locks ensure safe method-based access, but they cannot prevent unsafe **direct** access. That is why **encapsulation (private fields) + synchronization (locks)** must go to achieve real thread safety
+
+### Locking discipline
+
+A locking discipline is a strategy for ensuring that synchronized code is threadsafe. We must satisfy two conditions:
+
+1. Every shared mutable variable must be guarded by some lock. The data may not be read or written except inside a synchronized block that acquires that lock.
+2. If an variant involves multiple shared mutable variables (which might even be in different objects), then all the variables involved must be guarded by the **same** lock. Once a thread acquires the lock, the invariant must be reestablished before releasing the lock.
+
+The monitor pattern as used here satisfies both rules. All the shared mutable data in the rep - which the rep invariant depends on - are guarded by the same lock.
+
 
 
