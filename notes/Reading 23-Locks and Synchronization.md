@@ -312,5 +312,119 @@ A locking discipline is a strategy for ensuring that synchronized code is thread
 
 The monitor pattern as used here satisfies both rules. All the shared mutable data in the rep - which the rep invariant depends on - are guarded by the same lock.
 
+## Atomic operations
 
+Consider a find-and-replace operation on the `EditBuffer` type:
+
+```java
+/** Modifies buf by replacing the first occurrence of s with t.
+ *  If s not found in buf, then has no effect.
+ *  @returns true if and only if a replacement was made
+ */
+public static boolean findReplace(EditBuffer buf, String s, String t) {
+    int i = buf.toString().indexOf(s);
+    if (i == -1) {
+        return false;
+    }
+    buf.delete(i, s.length());
+    buf.insert(i, t);
+    return true;
+}
+```
+
+To prevent other threads from mutating the buffer while `findReplace` is working, `findReplace` needs to synchronize with all other clients of `buf`.
+
+### Giving clients access to a lock
+
+If you want to give clients the rights to implement higer-level atomic operations by synchronization, you should document in the specification.
+
+```java
+/** An EditBuffer represents a threadsafe mutable string of characters
+ *  in a text editor. Clients may synchronize with each other using the
+ *  EditBuffer object itself. */
+public interface EditBuffer {
+   ...
+}
+```
+
+And then `findReplace` can synchronize on `buf`:
+
+```java
+public static boolean findReplace(EditBuffer buf, String s, String t) {
+    synchronized (buf) {
+        int i = buf.toString().indexOf(s);
+        if (i == -1) {
+            return false;
+        }
+        buf.delete(i, s.length());
+        buf.insert(i, t);
+        return true;
+    }
+}
+```
+### Sprinking `synchronized` everywhere?
+
+So is thread safety simply a matter of putting the `synchronized` keyword on every method in your program? Unfortunately not!
+
+First, synchronization imposes a large cost on your program. 
+
+Another argument for using `synchronized` in a more deliberate way is that it minimizeds the scope of access to your lock. Adding `synchronized` to every method means that your lock is the object itself, and every client with a reference to your object automatically has a reference to your lock, that it can acquire and release at will. Your thread safety mechanism is therefore public and can be interfered with by clients.
+
+For example, we have a class:
+
+```java
+class Counter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+}
+```
+
+Any client holding a reference to the object can also lock it:
+
+```java
+Counter c = new Counter();
+
+synchronized(c) {  
+    Thread.sleep(10000); // deliberately hold the lock for 10 s
+}
+```
+
+To avoid this, we have an alternative plan: create a dedicated private lock:
+
+```java
+private final Object lock = new Object();
+public void foo() {
+    synchronized(lock) {
+        ...
+    }
+}
+```
+
+Finally, it's not actually sufficient to sprinkle `synchronized` everywhere. 
+
+Dropping synchronized onto a method without thinking means that you’re acquiring a lock without thinking about which lock it is, or about whether it’s the right lock for guarding the shared data access you’re about to do. Suppose we had tried to solve findReplace ’s synchronization problem simply by dropping synchronized onto its declaration:
+
+```java
+public static synchronized boolean findReplace(EditBuffer buf, ...) {
+```
+
+This wouldn’t do what we want. It would indeed acquire a lock — because findReplace is a static method, it would acquire a static lock for the whole class that findReplace happens to be in, rather than an instance object lock.
+
+As a result, only one thread could call findReplace at a time — even if other threads want to operate on different buffers, which should be safe, they’d still be blocked until the single lock was free. So we’d suffer a significant loss in performance, because only one user of our massive multiuser editor would be allowed to do a find-and-replace at a time, even if they’re all editing different documents.
+
+Worse, however, it wouldn’t provide useful protection, because other code that touches the document probably wouldn’t be acquiring the same lock. It wouldn’t actually eliminate our race conditions. 
+
+> The synchronized keyword is not a panacea. Thread safety requires a discipline — using **confinement, immutability, or locks** to protect shared data. And that discipline needs to be written down, or maintainers won’t know what it is.
+
+## Summary
+
+Producing a concurrent program that is safe from bugs, easy to understand, and ready for change requires careful thinking. Heisenbugs will skitter away as soon as you try to pin them down, so debugging simply isn’t an effective way to achieve correct threadsafe code. And threads can interleave their operations in so many different ways that you will never be able to test even a small fraction of all possible executions.
+
+- Make thread safety arguments about your datatypes, and document them in the code.
+- Acquiring a lock allows a thread to have exclusive access to the data guarded by that lock, forcing other threads to block — as long as those threads are also trying to acquire that same lock.
+- The monitor pattern guards the rep of a datatype with a single lock that is acquired by every method.
+- Blocking caused by acquiring multiple locks creates the possibility of deadlock.
 
