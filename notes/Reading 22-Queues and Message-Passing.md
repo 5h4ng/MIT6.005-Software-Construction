@@ -1,4 +1,4 @@
-# Reading 22-Sockets & Networking
+# Reading 22-Queues and Message-Passing
 
 ## Two models for concurrency
 
