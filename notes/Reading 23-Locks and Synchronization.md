@@ -419,6 +419,153 @@ Worse, however, it wouldn’t provide useful protection, because other code that
 
 > The synchronized keyword is not a panacea. Thread safety requires a discipline — using **confinement, immutability, or locks** to protect shared data. And that discipline needs to be written down, or maintainers won’t know what it is.
 
+## Deadlock rears its ugly head
+
+The locking approach to thread safety is powerful, but (unlike confinement and immutability) it introduces blocking into the program. And blocking raises the possibility of deadlock - a very real risk, and frankly far more common in this setting.
+
+With locking, deadlock happens when threads acquire mutliple locks at the same time, and two threads end up blocked while holding locks that they are each waiting for the other to release.  The monitor pattern  unfortunately makes this fairly easy to do. Here is an example:
+
+```java
+public class Wizard {
+    private final String name;
+    private final Set<Wizard> friends;
+    // Rep invariant:
+    //    name, friends != null
+    //    friend links are bidirectional: 
+    //        for all f in friends, f.friends contains this
+    // Concurrency argument:
+    //    threadsafe by monitor pattern: all accesses to rep 
+    //    are guarded by this object's lock
+
+    public Wizard(String name) {
+        this.name = name;
+        this.friends = new HashSet<Wizard>();
+    }
+
+    public synchronized boolean isFriendsWith(Wizard that) {
+        return this.friends.contains(that);
+    }
+
+    public synchronized void friend(Wizard that) {
+        if (friends.add(that)) {
+            that.friend(this);
+        } 
+    }
+
+    public synchronized void defriend(Wizard that) {
+        if (friends.remove(that)) {
+            that.defriend(this);
+        } 
+    }
+}
+```
+
+Like Facebook, this social network is bidirectional: if *x* is friends with *y* , then *y* is friends with *x* . The `friend() `and `defriend() `methods enforce that invariant by modifying the reps of both objects, which because they use the monitor pattern means acquiring the locks to both objects as well.
+
+Let’s create a couple of wizards:
+
+```java
+    Wizard harry = new Wizard("Harry Potter");
+    Wizard snape = new Wizard("Severus Snape");
+```
+
+And then think about what happens when two independent threads are repeatedly running:
+
+```java
+    // thread A                   // thread B
+    harry.friend(snape);          snape.friend(harry);
+    harry.defriend(snape);        snape.defriend(harry);
+```
+
+We will deadlock very rapidly. Here’s why. Suppose thread A is about to execute `harry.friend(snape) `, and thread B is about to execute `snape.friend(harry) `.
+
+- Thread A acquires the lock on `harry `(because the friend method is synchronized).
+- Then thread B acquires the lock on `snape `(for the same reason).
+- They both update their individual reps independently, and then try to call `friend() `on the other object — which requires them to acquire the lock on the other object.
+
+So A is holding Harry and waiting for Snape, and B is holding Snape and waiting for Harry. Both threads are stuck in `friend() `, so neither one will ever manage to exit the synchronized region and release the lock to the other. This is a classic deadly embrace. The program simply stops.
+
+The essence of the problem is acquiring multiple locks, and holding some of the locks while waiting for another lock to become free.
+
+Notice that it is possible for thread A and thread B to interleave such that deadlock does not occur: perhaps thread A acquires and releases both locks before thread B has enough time to acquire the first one. If the locks involved in a deadlock are also involved in a race condition — and very often they are — then the deadlock will be just as difficult to reproduce or debug.
+
+### Deadlock solution 1: lock ordering
+
+One way to prevent deadlock is to put an ordering on the locks that need to be acquired simultaneously, and ensuring that all codde acquires the locks in that order.
+
+In our social network example, we might always acquire the locks on the `Wizard `objects in **alphabetical** order by the wizard’s name. Since thread A and thread B are both going to need the locks for Harry and Snape, they would both acquire them in that order: Harry’s lock first, then Snape’s. If thread A gets Harry’s lock before B does, it will also get Snape’s lock before B does, because B can’t proceed until A releases Harry’s lock again. The ordering on the locks forces an ordering on the threads acquiring them, so there’s no way to produce a cycle in the waiting-for graph.
+
+Here’s what the code might look like:
+
+```java
+    public void friend(Wizard that) {
+        Wizard first, second;
+        if (this.name.compareTo(that.name) < 0) {
+            first = this; second = that;
+        } else {
+            first = that; second = this;
+        }
+        synchronized (first) {
+            synchronized (second) {
+                if (friends.add(that)) {
+                    that.friend(this);
+                } 
+            }
+        }
+    }
+```
+
+(Note that the decision to order the locks alphabetically by the person’s name would work fine for this book, but it wouldn’t work in a real life social network. Why not? What would be better to use for lock ordering than the name? - Because name might be changed !!!)
+
+Although lock ordering is useful (particularly in code like operating system kernels), it has a number of drawbacks in practice.
+
+- First, it’s not modular — the code has to know about all the locks in the system, or at least in its subsystem.
+- Second, it may be difficult or impossible for the code to know exactly which of those locks it will need before it even acquires the first one. It may need to do some computation to figure it out. Think about doing a depth-first search on the social network graph, for example — how would you know which nodes need to be locked, before you’ve even started looking for them?
+
+### Deadlock solution 2: coarse-grained locking
+
+A more common approach than lock ordering, particularly for application programming (as opposed to operating system or device driver programming), is to use coarser locking — use a single lock to guard many object instances, or even a whole subsystem of a program.
+
+For example, we might have a single lock for an entire social network, and have all the operations on any of its constituent parts synchronize on that lock. In the code below, all `Wizard `s belong to a `Castle `, and we just use that `Castle `object’s lock to synchronize:
+
+```java
+public class Wizard {
+    private final Castle castle;
+    private final String name;
+    private final Set<Wizard> friends;
+    ...
+    public void friend(Wizard that) {
+        synchronized (castle) {
+            if (this.friends.add(that)) {
+                that.friend(this);
+            }
+        }
+    }
+}
+```
+
+Coarse-grained locks can have a significant performance penalty. If you guard a large pile of mutable data with a single lock, then you’re giving up the ability to access any of that data concurrently. In the worst case, having a single lock protecting everything, your program might be essentially sequential — only one thread is allowed to make progress at a time.
+
+## Goals of concurrent program design
+
+Now is a good time to pop up a level and look at what we’re doing. Recall that our primary goals are to create software that is **safe from bugs** , **easy to understand** , and **ready for change** .
+
+Building concurrent software is clearly a challenge for all three of these goals. We can break the issues into two general classes. When we ask whether a concurrent program is *safe from bugs* , we care about two properties:
+
+- **Safety.** Does the concurrent program satisfy its invariants and its specifications? Races in accessing mutable data threaten safety. Safety asks the question: can you prove that **some bad thing never happens** ?
+- **Liveness.** Does the program keep running and eventually do what you want, or does it get stuck somewhere waiting forever for events that will never happen? Can you prove that **some good thing eventually happens** ?
+
+Deadlocks threaten liveness. Liveness may also require *fairness* , which means that concurrent modules are given processing capacity to make progress on their computations. Fairness is mostly a matter for the operating system’s thread scheduler, but you can influence it (for good or for ill) by setting thread priorities.
+
+## Concurrency in practice
+
+What strategies are typically followed in real programs?
+
+- **Library data structures** either use no synchronization (to offer high performance to single-threaded clients, while leaving it to multithreaded clients to add locking on top) or the monitor pattern.
+- **Mutable data structures with many parts** typically use either coarse-grained locking or thread confinement. Most graphical user interface toolkits follow one of these approaches, because a graphical user interface is basically a big mutable tree of mutable objects. Java Swing, the graphical user interface toolkit, uses thread confinement. Only a single dedicated thread is allowed to access Swing’s tree. Other threads have to pass messages to that dedicated thread in order to access the tree.
+- **Search** often uses immutable datatypes. Our [Boolean formula satisfiability search ](https://ocw.mit.edu/ans7870/6/6.005/s16/classes/16-recursive-data-types/recursive/#another_example_boolean_formulas)would be easy to make multithreaded, because all the datatypes involved were immutable. There would be no risk of either races or deadlocks.
+- **Operating systems** often use fine-grained locks in order to get high performance, and use lock ordering to deal with deadlock problems.
+
 ## Summary
 
 Producing a concurrent program that is safe from bugs, easy to understand, and ready for change requires careful thinking. Heisenbugs will skitter away as soon as you try to pin them down, so debugging simply isn’t an effective way to achieve correct threadsafe code. And threads can interleave their operations in so many different ways that you will never be able to test even a small fraction of all possible executions.
