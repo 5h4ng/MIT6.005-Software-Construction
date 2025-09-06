@@ -125,3 +125,50 @@ A simple example of the MVC pattern is a text field. The figure at right shows J
 > 1. Multiple views showing the same application data
 > 2. enables the creation of user interface toolkits, which are libraries of reusable views
 
+## Background Processing in Graphical User Interfaces
+
+The last major topic for today connects back to **concurrency.**
+
+#### Motivation
+
+Many programs need to do operations that may take some time: retrieving URLs over the network, running database queries, scanning a filesystem, etc.
+
+Input handing and screen repainting both happen in **one thread**: the ETD (Event-Dispatch Thread). The ETD:
+
+- reads events from the queue
+- dispatches them to listeners in the view tree
+- repaints the screen when no events are pending
+
+In Java, the **EDT is separated** from the program's main thread. The EDT starts autamatically when a GUI object is created. Most Swing apps:
+
+- Main thread: initializes the view, then exists.
+- EDT: responsible for all GUI work
+
+Swing's view tree is not threadsafe - no gurantee of internal locks protecting it. By design, Swing avoids complex locks and instead enforces a **single-thread confinement rule**: only the EDT may read or write Swing components. Any access from other threads is forbidden by the specification.
+
+There is a safe way to update the UI: developers can submit `Runnable` tasks into the **event queue** of Swing. 
+
+- Use `SwingUtilities.invokeLater()` (or `invokeAndWait`) to enqueue UI-updating tasks:
+
+```java
+SwingUtilities.invokeLater(new Runnable() {
+    public void run() {
+        content.add(thumbnail); // safe UI update on EDT
+        content.revalidate();
+        content.repaint();
+    }
+});
+```
+
+- `invokeLater()`:
+  - Places task at the end of the event queue.
+  - EDT eventually picks it up and runs it.
+  - Ensures the UI update happens inside the EDT → safe.
+
+## Summary
+
+- The view tree organizes the screen into a tree of nested rectangles, and it is used in dispatching input events as well as displaying output.
+- The Listener pattern sends a stream of events (like mouse or keyboard events, or button action events) to registered listeners.
+- The Model-View-Controller pattern separates responsibilities: model=data, view=output, controller=input.
+- Long-running processing should be moved to a **background thread**, but the Swing view tree is confined to the event-dispatch thread. So accessing Swing objects from another thread requires using the event loop as a message-passing queue, to get back to the event-dispatch thread.
+
