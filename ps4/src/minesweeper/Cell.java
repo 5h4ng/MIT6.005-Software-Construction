@@ -34,7 +34,7 @@ public class Cell {
     }
 
     /** @return true iff this cell has a bomb */
-    public boolean hasBomb() {
+    public synchronized boolean hasBomb() {
         return hasBomb;
     }
 
