@@ -29,6 +29,8 @@ public class MinesweeperServer {
     /** True if the server should *not* disconnect a client after a BOOM message. */
     private final boolean debug;
 
+    private final Board board;
+
     // TODO: Abstraction function, rep invariant, rep exposure
 
     /**
@@ -38,9 +40,10 @@ public class MinesweeperServer {
      * @param debug debug mode flag
      * @throws IOException if an error occurs opening the server socket
      */
-    public MinesweeperServer(int port, boolean debug) throws IOException {
+    public MinesweeperServer(int port, boolean debug, Board board) throws IOException {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
+        this.board = board;
     }
 
     /**
@@ -254,10 +257,84 @@ public class MinesweeperServer {
      * @throws IOException if a network error occurs
      */
     public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
-        
-        // TODO: Continue implementation here in problem 4
-        
-        MinesweeperServer server = new MinesweeperServer(port, debug);
+        Board board = null;
+        if (file.isPresent()) {
+            board = readFile(file.get());
+        } else {
+            if (sizeX <= 0 || sizeY <= 0) {
+                throw new IllegalArgumentException("size x or size y is negative");
+            }
+            board = makeRandomBoard(sizeX, sizeY);
+        }
+
+        MinesweeperServer server = new MinesweeperServer(port, debug, board);
         server.serve();
+    }
+    
+    /**
+     * Read a file to board.
+     * @param file
+     * @return a board
+     * @throws IOException
+     */
+    private static Board readFile(File file) throws IOException {
+        // try-with-resources clause
+        try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+            String firstLine = in.readLine();
+            if (firstLine == null) {
+                throw new RuntimeException("File is empty");
+            }
+            String[] sizes = firstLine.trim().split("\\s+");
+            if (sizes.length != 2) {
+                throw new RuntimeException("Invalid size information in the header.");
+            }
+            int sizeX = Integer.parseInt(sizes[0]);
+            int sizeY = Integer.parseInt(sizes[1]);
+            boolean[][] bombInfo = new boolean[sizeX][sizeY];
+            for (int i = 0; i < sizeX; i++) {
+                String line = in.readLine();
+                if (line == null) {
+                    throw new RuntimeException("Missing rows in board file");
+                }
+                String[] vals = line.trim().split("\\s+");
+                if (vals.length != sizeX) {
+                    throw new RuntimeException("Invalid number of columns on line");
+                }
+                for (int j = 0; j < sizeY; j++) {
+                    switch (vals[j]) {
+                        case "0":
+                            bombInfo[i][j] = false;
+                            break;
+                        case "1":
+                            bombInfo[i][j] = true;
+                            break;
+                        default:
+                            throw new RuntimeException("Invalid cell value: " + vals[j]);
+                    }
+                }
+            }
+            if (in.readLine() != null) {
+                throw new RuntimeException("Extra rows in board file");
+            }
+            return new Board(sizeX,sizeY, bombInfo);
+        }
+    }
+
+    /**
+     * Return a random board based on the size.
+     * The probability of a cell with a bomb is 0.25.
+     * @param sizeX sizeX > 0
+     * @param sizeY sizeY > 0
+     * @return a board
+     */
+    private static Board makeRandomBoard(int sizeX, int sizeY) {
+        boolean[][] bombInfo =  new boolean[sizeX][sizeY];
+        Random random = new Random();
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                bombInfo[i][j] = random.nextDouble() < 0.25;
+            }
+        }
+        return new Board(sizeX, sizeY, bombInfo);
     }
 }
