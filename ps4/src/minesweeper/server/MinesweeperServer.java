@@ -31,6 +31,20 @@ public class MinesweeperServer {
 
     private final Board board;
 
+    private static int clientCount = 0;
+
+    private static synchronized int incrementClientCount() {
+        return ++clientCount;
+    }
+
+    private static synchronized int decrementClientCount() {
+        return --clientCount;
+    }
+
+    private static synchronized int getClientCount() {
+        return clientCount;
+    }
+
     // TODO: Abstraction function, rep invariant, rep exposure
 
     /**
@@ -86,16 +100,27 @@ public class MinesweeperServer {
     private void handleConnection(Socket socket) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
+        MinesweeperServer.incrementClientCount();
+        int playerCount = MinesweeperServer.getClientCount();
         try {
+            // HELLO message
+            String hello = "Welcome to Minesweeper. Board: "
+                    + board.getWidth() + " columns by " + board.getHeight()
+                    + " rows. Players: " + playerCount + " including you. Type 'help' for help.";
+            out.println(hello);
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 String output = handleRequest(line);
-                if (output != null) {
-                    // TODO: Consider improving spec of handleRequest to avoid use of null
-                    out.println(output);
+                if (output == null) {
+                    break; // bye
+                }
+                out.println(output);
+
+                if (output.equals("BOOM!") && !debug) {
+                    break;
                 }
             }
         } finally {
+            MinesweeperServer.decrementClientCount();
             out.close();
             in.close();
         }
@@ -112,33 +137,50 @@ public class MinesweeperServer {
                      + "(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|(deflag -?\\d+ -?\\d+)";
         if ( ! input.matches(regex)) {
             // invalid input
-            // TODO Problem 5
+            return "Commands: look, dig X Y, flag X Y, deflag X Y, help, bye";
         }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("look")) {
             // 'look' request
-            // TODO Problem 5
+            return board.getBoardMessage();
         } else if (tokens[0].equals("help")) {
             // 'help' request
-            // TODO Problem 5
+            return "Commands: look, dig X Y, flag X Y, deflag X Y, help, bye";
         } else if (tokens[0].equals("bye")) {
             // 'bye' request
-            // TODO Problem 5
+            return null;
         } else {
             int x = Integer.parseInt(tokens[1]);
             int y = Integer.parseInt(tokens[2]);
             if (tokens[0].equals("dig")) {
                 // 'dig x y' request
-                // TODO Problem 5
+                try {
+                    boolean isBomb = board.dig(x, y);
+                    if (isBomb && !debug) {
+                        return "BOOM!";
+                    }
+                    return board.getBoardMessage();
+                } catch (IllegalArgumentException iae) {
+                    return board.getBoardMessage();
+                }
             } else if (tokens[0].equals("flag")) {
                 // 'flag x y' request
-                // TODO Problem 5
+                try {
+                    board.flag(x, y);
+                } catch (IllegalArgumentException e) {
+                    // invalid: do nothing
+                }
+                return board.getBoardMessage();
             } else if (tokens[0].equals("deflag")) {
                 // 'deflag x y' request
-                // TODO Problem 5
+                try {
+                    board.deflag(x, y);
+                } catch (IllegalArgumentException e) {
+                    // invalid: do nothing
+                }
+                return board.getBoardMessage();
             }
         }
-        // TODO: Should never get here, make sure to return in each of the cases above
         throw new UnsupportedOperationException();
     }
 
@@ -270,7 +312,7 @@ public class MinesweeperServer {
         MinesweeperServer server = new MinesweeperServer(port, debug, board);
         server.serve();
     }
-    
+
     /**
      * Read a file to board.
      * @param file
@@ -291,7 +333,7 @@ public class MinesweeperServer {
             int sizeX = Integer.parseInt(sizes[0]);
             int sizeY = Integer.parseInt(sizes[1]);
             boolean[][] bombInfo = new boolean[sizeX][sizeY];
-            for (int i = 0; i < sizeX; i++) {
+            for (int i = 0; i < sizeY; i++) {
                 String line = in.readLine();
                 if (line == null) {
                     throw new RuntimeException("Missing rows in board file");
@@ -300,13 +342,13 @@ public class MinesweeperServer {
                 if (vals.length != sizeX) {
                     throw new RuntimeException("Invalid number of columns on line");
                 }
-                for (int j = 0; j < sizeY; j++) {
+                for (int j = 0; j < sizeX; j++) {
                     switch (vals[j]) {
                         case "0":
-                            bombInfo[i][j] = false;
+                            bombInfo[j][i] = false;
                             break;
                         case "1":
-                            bombInfo[i][j] = true;
+                            bombInfo[j][i] = true;
                             break;
                         default:
                             throw new RuntimeException("Invalid cell value: " + vals[j]);
