@@ -119,10 +119,11 @@ public class Board {
         Cell cell = grid[x][y];
         cell.dig();
 
+        boolean bombFlag = false;
         // case: bomb
         if (cell.hasBomb()) {
             cell.removeBomb();
-            return true;
+            bombFlag = true;
         }
 
         // case: no bomb
@@ -138,7 +139,7 @@ public class Board {
                 }
             }
         }
-        return false;
+        return bombFlag;
     }
 
     /**
@@ -199,7 +200,9 @@ public class Board {
                     sb.append(" ");
                 }
             }
-            sb.append("\n");
+            if (y < height - 1) {
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }

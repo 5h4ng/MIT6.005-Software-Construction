@@ -156,7 +156,7 @@ public class MinesweeperServer {
                 // 'dig x y' request
                 try {
                     boolean isBomb = board.dig(x, y);
-                    if (isBomb && !debug) {
+                    if (isBomb) {
                         return "BOOM!";
                     }
                     return board.getBoardMessage();
